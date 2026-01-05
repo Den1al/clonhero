@@ -42,6 +42,27 @@ export class Player {
     this.shield = 0;
     this.orbitals = [];
 
+    // Elemental abilities
+    this.fireArrows = false;
+    this.iceArrows = false;
+    this.poisonArrows = false;
+    this.elementalType = null;
+
+    // Fire upgrades
+    this.burnDamageMultiplier = 1;
+    this.burnDurationBonus = 0;
+    this.infernoExplosion = false;
+
+    // Ice upgrades
+    this.freezeSlowBonus = 0;
+    this.freezeDurationBonus = 0;
+    this.shatterBonus = false;
+
+    // Poison upgrades
+    this.poisonDamageMultiplier = 1;
+    this.poisonDurationBonus = 0;
+    this.plagueSpread = false;
+
     this.createMesh();
     this.createHealthBar();
   }
@@ -350,6 +371,21 @@ export class Player {
     this.ricochet = false;
     this.homing = false;
     this.shield = 0;
+
+    // Reset elemental abilities
+    this.fireArrows = false;
+    this.iceArrows = false;
+    this.poisonArrows = false;
+    this.elementalType = null;
+    this.burnDamageMultiplier = 1;
+    this.burnDurationBonus = 0;
+    this.infernoExplosion = false;
+    this.freezeSlowBonus = 0;
+    this.freezeDurationBonus = 0;
+    this.shatterBonus = false;
+    this.poisonDamageMultiplier = 1;
+    this.poisonDurationBonus = 0;
+    this.plagueSpread = false;
 
     this.updateHealthBar();
     this.healthBarBg.visible = false;

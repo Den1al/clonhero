@@ -250,4 +250,67 @@ export class UI {
     this.updateStageInfo(1, 1);
     this.elements.abilityBar.innerHTML = '';
   }
+
+  showGodModeIndicator() {
+    // Create god mode indicator if it doesn't exist
+    if (document.getElementById('god-mode-indicator')) return;
+
+    const indicator = document.createElement('div');
+    indicator.id = 'god-mode-indicator';
+    indicator.innerHTML = `
+      <div class="god-mode-title">🔥 GOD MODE 🔥</div>
+      <div class="god-mode-keys">
+        <span><kbd>S</kbd> Skill</span>
+        <span><kbd>E</kbd> Victory</span>
+        <span><kbd>X</kbd> Die</span>
+      </div>
+    `;
+    indicator.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 140, 0, 0.9));
+      color: #1a1a2e;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      z-index: 9999;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4), 0 0 30px rgba(255, 140, 0, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      animation: godModePulse 2s ease-in-out infinite;
+    `;
+
+    // Add styles for the indicator content
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes godModePulse {
+        0%, 100% { box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4), 0 0 30px rgba(255, 140, 0, 0.2); }
+        50% { box-shadow: 0 4px 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 140, 0, 0.4); }
+      }
+      #god-mode-indicator .god-mode-title {
+        text-align: center;
+        font-size: 14px;
+        margin-bottom: 8px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      }
+      #god-mode-indicator .god-mode-keys {
+        display: flex;
+        gap: 10px;
+        font-size: 11px;
+        font-weight: normal;
+      }
+      #god-mode-indicator kbd {
+        background: rgba(0,0,0,0.2);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-weight: bold;
+      }
+    `;
+    document.head.appendChild(style);
+
+    document.body.appendChild(indicator);
+  }
 }

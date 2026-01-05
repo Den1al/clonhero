@@ -798,8 +798,9 @@ describe('AbilitySystem', () => {
   describe('All Abilities Definition Validation', () => {
     const allAbilities = Object.values(Abilities);
 
-    it('should have exactly 21 abilities defined', () => {
-      expect(allAbilities.length).toBe(21);
+    it('should have exactly 30 abilities defined', () => {
+      // 21 original + 9 elemental abilities
+      expect(allAbilities.length).toBe(30);
     });
 
     it('all abilities should have required properties', () => {

@@ -1,6 +1,41 @@
 import * as THREE from 'three';
 import { ObjectPool } from '../utils/ObjectPool.js';
 import { MathUtils } from '../utils/MathUtils.js';
+import { StatusEffectTypes } from '../systems/StatusEffectSystem.js';
+
+// Color configurations for elemental projectiles
+const ElementalColors = {
+  [StatusEffectTypes.BURN]: {
+    core: 0xff4500,
+    emissive: 0xff6600,
+    glow: 0xff8c00,
+    trail: 0xffa500
+  },
+  [StatusEffectTypes.FREEZE]: {
+    core: 0x00bfff,
+    emissive: 0x87ceeb,
+    glow: 0xadd8e6,
+    trail: 0xe0ffff
+  },
+  [StatusEffectTypes.POISON]: {
+    core: 0x32cd32,
+    emissive: 0x228b22,
+    glow: 0x90ee90,
+    trail: 0x9acd32
+  },
+  default: {
+    core: 0xf1c40f,
+    emissive: 0xf39c12,
+    glow: 0xf1c40f,
+    trail: 0xf39c12
+  },
+  enemy: {
+    core: 0xe74c3c,
+    emissive: 0xc0392b,
+    glow: 0xe74c3c,
+    trail: 0xc0392b
+  }
+};
 
 export class Projectile {
   constructor() {
@@ -19,6 +54,10 @@ export class Projectile {
     this.ricochet = false;
     this.homing = false;
     this.homingStrength = 2;
+
+    // Elemental properties
+    this.elementalType = null;
+    this.trailTimer = 0;
 
     this.createMesh();
   }
@@ -72,6 +111,7 @@ export class Projectile {
     this.piercedEnemies.clear();
     this.isActive = true;
     this.lifetime = 0;
+    this.trailTimer = 0;
     this.mesh.visible = true;
     this.isPlayerProjectile = options.isPlayerProjectile !== false;
 
@@ -79,16 +119,38 @@ export class Projectile {
     this.ricochet = options.ricochet || false;
     this.homing = options.homing || false;
 
-    if (this.isPlayerProjectile) {
-      this.mesh.children[0].material.color.setHex(0xf1c40f);
-      this.mesh.children[0].material.emissive.setHex(0xf39c12);
+    // Elemental type
+    this.elementalType = options.elementalType || null;
+
+    // Set colors based on elemental type or default
+    let colors;
+    if (!this.isPlayerProjectile) {
+      colors = ElementalColors.enemy;
+    } else if (this.elementalType && ElementalColors[this.elementalType]) {
+      colors = ElementalColors[this.elementalType];
     } else {
-      this.mesh.children[0].material.color.setHex(0xe74c3c);
-      this.mesh.children[0].material.emissive.setHex(0xc0392b);
+      colors = ElementalColors.default;
     }
+
+    // Apply colors to mesh components
+    const core = this.mesh.children[0];
+    const glow = this.mesh.children[1];
+    const trail = this.mesh.children[2];
+
+    core.material.color.setHex(colors.core);
+    core.material.emissive.setHex(colors.emissive);
+    glow.material.color.setHex(colors.glow);
+    trail.material.color.setHex(colors.trail);
 
     const angle = Math.atan2(this.velocity.x, this.velocity.z);
     this.mesh.rotation.y = angle;
+  }
+
+  getTrailColor() {
+    if (this.elementalType && ElementalColors[this.elementalType]) {
+      return ElementalColors[this.elementalType].trail;
+    }
+    return this.isPlayerProjectile ? ElementalColors.default.trail : ElementalColors.enemy.trail;
   }
 
   update(delta, enemies, player, arenaSize) {
@@ -187,7 +249,9 @@ export class Projectile {
     this.mesh.visible = false;
     this.piercedEnemies.clear();
     this.lifetime = 0;
+    this.trailTimer = 0;
     this.velocity.set(0, 0, 0);
+    this.elementalType = null;
   }
 }
 

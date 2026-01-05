@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MathUtils } from '../utils/MathUtils.js';
+import { StatusEffectManager, StatusEffectTypes, StatusEffectConfigs } from '../systems/StatusEffectSystem.js';
 
 export const EnemyTypes = {
   CHASER: 'chaser',
@@ -111,8 +112,14 @@ export class Enemy {
       this.attackPattern = 0;
     }
 
+    // Status effect system
+    this.statusEffects = new StatusEffectManager();
+    this.baseSpeed = this.speed;
+    this.statusVisualTimer = 0;
+
     this.createMesh(position);
     this.createHealthBar();
+    this.createStatusEffectIndicators();
   }
 
   createMesh(position) {
@@ -238,7 +245,72 @@ export class Enemy {
     this.healthBarBg.add(this.healthBar);
   }
 
-  update(delta, player, projectileSystem) {
+  createStatusEffectIndicators() {
+    // Container for status effect icons above health bar
+    this.statusIconContainer = new THREE.Group();
+    this.statusIconContainer.position.y = this.config.size * 2 + 0.5;
+    this.mesh.add(this.statusIconContainer);
+
+    // Pre-create status effect ring indicators
+    this.statusRings = {};
+
+    // Burn ring (fire)
+    const burnRing = this.createStatusRing(StatusEffectConfigs[StatusEffectTypes.BURN].color);
+    burnRing.visible = false;
+    this.statusRings[StatusEffectTypes.BURN] = burnRing;
+    this.mesh.add(burnRing);
+
+    // Freeze ring (ice)
+    const freezeRing = this.createStatusRing(StatusEffectConfigs[StatusEffectTypes.FREEZE].color);
+    freezeRing.visible = false;
+    this.statusRings[StatusEffectTypes.FREEZE] = freezeRing;
+    this.mesh.add(freezeRing);
+
+    // Poison ring
+    const poisonRing = this.createStatusRing(StatusEffectConfigs[StatusEffectTypes.POISON].color);
+    poisonRing.visible = false;
+    this.statusRings[StatusEffectTypes.POISON] = poisonRing;
+    this.mesh.add(poisonRing);
+
+    // Aura mesh for tinting
+    const auraGeometry = new THREE.SphereGeometry(this.config.size * 1.3, 16, 16);
+    const auraMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0,
+      side: THREE.BackSide
+    });
+    this.statusAura = new THREE.Mesh(auraGeometry, auraMaterial);
+    this.statusAura.position.y = this.config.size;
+    this.mesh.add(this.statusAura);
+  }
+
+  createStatusRing(color) {
+    const ring = new THREE.Group();
+
+    // Create a ring of small spheres that orbit the enemy
+    const sphereCount = 6;
+    for (let i = 0; i < sphereCount; i++) {
+      const sphereGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+      const sphereMaterial = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.8
+      });
+      const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+
+      const angle = (i / sphereCount) * Math.PI * 2;
+      sphere.position.x = Math.cos(angle) * this.config.size * 1.5;
+      sphere.position.z = Math.sin(angle) * this.config.size * 1.5;
+      sphere.position.y = this.config.size * 0.5;
+
+      ring.add(sphere);
+    }
+
+    return ring;
+  }
+
+  update(delta, player, projectileSystem, particleSystem = null) {
     // Handle death animation first (isDying is true but isAlive is false)
     if (this.isDying) {
       this.deathTimer += delta;
@@ -253,6 +325,19 @@ export class Enemy {
 
     // Skip update if not alive (and not in dying state)
     if (!this.isAlive) return null;
+
+    // Update status effects
+    const statusResult = this.statusEffects.update(delta, this, particleSystem);
+    if (statusResult.totalDamage > 0) {
+      this.takeDamage(statusResult.totalDamage, null, true); // true = from status effect
+    }
+
+    // Apply speed modifier from freeze
+    const speedMultiplier = this.statusEffects.getSpeedMultiplier();
+    this.speed = this.baseSpeed * speedMultiplier;
+
+    // Update status effect visuals
+    this.updateStatusVisuals(delta);
 
     this.knockbackVelocity.multiplyScalar(0.9);
 
@@ -418,14 +503,20 @@ export class Enemy {
     );
   }
 
-  takeDamage(amount, knockbackDir = null) {
+  takeDamage(amount, knockbackDir = null, fromStatusEffect = false) {
     if (!this.isAlive || this.isDying) return false;
 
     this.health -= amount;
     this.health = Math.max(0, this.health);
 
     this.updateHealthBar();
-    this.flashDamage();
+
+    // Don't flash white for status effect damage - use colored flash instead
+    if (!fromStatusEffect) {
+      this.flashDamage();
+    } else {
+      this.flashStatusDamage();
+    }
 
     if (knockbackDir) {
       const knockbackStrength = this.type === EnemyTypes.BOSS ? 1 : 3;
@@ -439,6 +530,63 @@ export class Enemy {
     }
 
     return false;
+  }
+
+  applyStatusEffect(type, stacks = 1) {
+    if (!this.isAlive || this.isDying) return;
+    this.statusEffects.applyEffect(type, stacks);
+  }
+
+  hasStatusEffect(type) {
+    return this.statusEffects.hasEffect(type);
+  }
+
+  updateStatusVisuals(delta) {
+    this.statusVisualTimer += delta;
+
+    // Update ring visibility and rotation based on active effects
+    for (const [type, ring] of Object.entries(this.statusRings)) {
+      const hasEffect = this.statusEffects.hasEffect(type);
+      ring.visible = hasEffect;
+
+      if (hasEffect) {
+        // Rotate the ring
+        const rotationSpeed = type === StatusEffectTypes.FREEZE ? 0.5 : 2;
+        ring.rotation.y += delta * rotationSpeed;
+
+        // Pulsing effect based on stacks
+        const effect = this.statusEffects.getEffect(type);
+        const pulseScale = 1 + Math.sin(this.statusVisualTimer * 4) * 0.1 * effect.stacks;
+        ring.scale.setScalar(pulseScale);
+      }
+    }
+
+    // Update aura tint
+    const tint = this.statusEffects.getVisualTint();
+    if (tint) {
+      this.statusAura.material.color.copy(tint);
+      this.statusAura.material.opacity = 0.2 + Math.sin(this.statusVisualTimer * 3) * 0.1;
+    } else {
+      this.statusAura.material.opacity = 0;
+    }
+
+    // Apply emissive glow to body based on status effects
+    if (this.statusEffects.getActiveEffects().length > 0 && this.hitFlashTimer <= 0) {
+      const dominantEffect = this.statusEffects.getActiveEffects()[0];
+      this.body.material.emissive = new THREE.Color(dominantEffect.config.color);
+      this.body.material.emissiveIntensity = 0.15 + Math.sin(this.statusVisualTimer * 5) * 0.05;
+    } else if (this.hitFlashTimer <= 0) {
+      this.body.material.emissiveIntensity = 0;
+    }
+  }
+
+  flashStatusDamage() {
+    // Get the dominant status effect color for the flash
+    const effects = this.statusEffects.getActiveEffects();
+    if (effects.length > 0) {
+      this.body.material.color.setHex(effects[0].config.color);
+      this.hitFlashTimer = 0.08;
+    }
   }
 
   flashDamage() {

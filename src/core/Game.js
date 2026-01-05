@@ -4,6 +4,7 @@ import { Input } from './Input.js';
 import { Audio } from './Audio.js';
 import { Player } from '../entities/Player.js';
 import { Enemy, EnemyTypes } from '../entities/Enemy.js';
+import { StatusEffectTypes } from '../systems/StatusEffectSystem.js';
 import { ProjectileSystem } from '../entities/Projectile.js';
 import { XPGemSystem } from '../entities/XPGem.js';
 import { ParticleSystem } from '../entities/Particle.js';
@@ -29,9 +30,25 @@ export class Game {
     this.canvas = canvas;
     this.state = GameState.MENU;
 
+    // Check for god mode via query param
+    const urlParams = new URLSearchParams(window.location.search);
+    this.godMode = urlParams.get('godmode') === 'true';
+
+    // God mode key state tracking
+    this.godModeKeyPressed_S = false;
+    this.godModeKeyPressed_E = false;
+    this.godModeKeyPressed_X = false;
+
     this.scene = new GameScene(canvas);
     this.input = new Input();
     this.ui = new UI();
+
+    // Show god mode UI indicator
+    if (this.godMode) {
+      console.log('%c🔥 GOD MODE ENABLED 🔥', 'color: gold; font-size: 20px; font-weight: bold;');
+      console.log('Press S = New Skill, E = Victory, X = Die');
+      this.ui.showGodModeIndicator();
+    }
 
     this.arenaSize = 20;
     this.arena = new Arena(this.scene.scene, this.arenaSize);
@@ -50,7 +67,6 @@ export class Game {
 
     this.roomTransitionTimer = 0;
     this.waveStartDelay = 0;
-    this.pendingLevelUp = false;
 
     this.lastTime = 0;
     this.deltaTime = 0;
@@ -96,7 +112,6 @@ export class Game {
 
     this.enemiesKilled = 0;
     this.totalTime = 0;
-    this.pendingLevelUp = false;
 
     this.ui.reset();
   }
@@ -194,7 +209,6 @@ export class Game {
     this.ui.updateLevel(this.player.level);
     this.ui.updateXP(this.player.xp, this.player.xpToNextLevel);
 
-    this.pendingLevelUp = false;
     this.state = GameState.PLAYING;
   }
 
@@ -223,6 +237,11 @@ export class Game {
   update(delta) {
     if (this.state !== GameState.PLAYING) return;
 
+    // God mode key handling
+    if (this.godMode) {
+      this.handleGodModeKeys();
+    }
+
     this.totalTime += delta;
     this.input.update();
 
@@ -236,7 +255,7 @@ export class Game {
 
     for (let i = this.enemies.length - 1; i >= 0; i--) {
       const enemy = this.enemies[i];
-      const result = enemy.update(delta, this.player, this.projectileSystem);
+      const result = enemy.update(delta, this.player, this.projectileSystem, this.particleSystem);
 
       if (result === 'dead') {
         this.onEnemyDeath(enemy);
@@ -272,17 +291,15 @@ export class Game {
       this.ui.updateXP(this.player.xp, this.player.xpToNextLevel);
 
       if (leveledUp) {
-        this.pendingLevelUp = true;
+        // Immediately show level up screen when XP threshold is reached
+        this.showLevelUp();
+        return; // Skip the rest of the update while in level up screen
       }
     }
 
     this.handleCollisions();
 
     this.handleWaveLogic(delta);
-
-    if (this.pendingLevelUp && !this.waveSystem.isWaveInProgress()) {
-      this.showLevelUp();
-    }
 
     if (!this.player.isAlive()) {
       this.gameOver();
@@ -320,7 +337,8 @@ export class Game {
               bouncyWalls: this.player.bouncyWalls,
               ricochet: this.player.ricochet,
               homing: this.player.homing,
-              isCrit
+              isCrit,
+              elementalType: this.player.elementalType
             }
           );
         }
@@ -377,18 +395,44 @@ export class Game {
         damage: enemy.config.explosionDamage
       } : null;
 
-      const killed = enemy.takeDamage(projectile.damage, knockbackDir);
+      // Check for inferno explosion (burning enemy dying)
+      const hadBurn = enemy.hasStatusEffect(StatusEffectTypes.BURN);
+
+      // Calculate damage with shatter bonus
+      let finalDamage = projectile.damage;
+      if (this.player.shatterBonus && enemy.hasStatusEffect(StatusEffectTypes.FREEZE)) {
+        finalDamage *= 1.3; // 30% bonus damage to frozen enemies
+      }
+
+      const killed = enemy.takeDamage(finalDamage, knockbackDir);
+
+      // Apply status effect from elemental projectile
+      if (projectile.elementalType && projectile.isPlayerProjectile && !killed) {
+        enemy.applyStatusEffect(projectile.elementalType, 1);
+
+        // Emit elemental hit particles
+        this.emitElementalHitParticles(position, projectile.elementalType);
+      }
+
+      // Handle plague spread (poison spreads to nearby enemies)
+      if (projectile.elementalType === StatusEffectTypes.POISON && this.player.plagueSpread) {
+        this.spreadPoison(enemy, position);
+      }
 
       projectile.onHitEnemy(enemy, this.enemies);
 
       Audio.play('hit');
-      this.particleSystem.emitHit(position, 0xffffff);
+
+      // Use elemental color for hit particles if applicable
+      const hitColor = projectile.elementalType ?
+        this.getElementalColor(projectile.elementalType) : 0xffffff;
+      this.particleSystem.emitHit(position, hitColor);
 
       const screenPos = this.scene.worldToScreen(position);
       this.ui.showDamageNumber(
         screenPos.x,
         screenPos.y,
-        projectile.damage,
+        Math.floor(finalDamage),
         projectile.isCrit
       );
 
@@ -397,6 +441,16 @@ export class Game {
         this.handleExplosion({
           type: 'explosion',
           ...bomberConfig
+        });
+      }
+
+      // Handle inferno explosion (burning enemy explodes on death)
+      if (killed && hadBurn && this.player.infernoExplosion && !isBomber) {
+        this.handleExplosion({
+          type: 'explosion',
+          position: enemy.mesh.position.clone(),
+          radius: 1.5,
+          damage: 15
         });
       }
     }
@@ -478,7 +532,9 @@ export class Game {
           this.ui.showXPCollected(autoCollectedXP);
 
           if (leveledUp) {
-            this.pendingLevelUp = true;
+            // Immediately show level up screen
+            this.showLevelUp();
+            return; // Exit early, level up screen will pause the game
           }
         }
       }
@@ -536,6 +592,99 @@ export class Game {
       this.scene.render();
     } catch (error) {
       console.error('Game loop error:', error);
+    }
+  }
+
+  // God mode methods
+
+  handleGodModeKeys() {
+    // S = Show skill selection
+    if (this.input.isKeyPressed('KeyS') && !this.godModeKeyPressed_S) {
+      this.godModeKeyPressed_S = true;
+      this.showLevelUp();
+    } else if (!this.input.isKeyPressed('KeyS')) {
+      this.godModeKeyPressed_S = false;
+    }
+
+    // E = Victory (end level)
+    if (this.input.isKeyPressed('KeyE') && !this.godModeKeyPressed_E) {
+      this.godModeKeyPressed_E = true;
+      this.victory();
+    } else if (!this.input.isKeyPressed('KeyE')) {
+      this.godModeKeyPressed_E = false;
+    }
+
+    // D = Die (game over) - using KeyX instead to avoid conflict with movement
+    if (this.input.isKeyPressed('KeyX') && !this.godModeKeyPressed_X) {
+      this.godModeKeyPressed_X = true;
+      this.player.health = 0;
+      this.gameOver();
+    } else if (!this.input.isKeyPressed('KeyX')) {
+      this.godModeKeyPressed_X = false;
+    }
+  }
+
+  // Helper methods for elemental effects
+
+  getElementalColor(elementalType) {
+    switch (elementalType) {
+      case StatusEffectTypes.BURN:
+        return 0xff4500;
+      case StatusEffectTypes.FREEZE:
+        return 0x00bfff;
+      case StatusEffectTypes.POISON:
+        return 0x32cd32;
+      default:
+        return 0xffffff;
+    }
+  }
+
+  emitElementalHitParticles(position, elementalType) {
+    const color = this.getElementalColor(elementalType);
+    const count = 5;
+
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2;
+      const config = {
+        position: position.clone(),
+        color,
+        speed: MathUtils.randomRange(2, 4),
+        lifetime: 0.4,
+        startScale: 0.12,
+        endScale: 0,
+        angle,
+        elevation: elementalType === StatusEffectTypes.BURN ? 0.8 : 0.3,
+        gravity: elementalType === StatusEffectTypes.BURN ? -2 : 5
+      };
+
+      this.particleSystem.emit(config);
+    }
+  }
+
+  spreadPoison(sourceEnemy, position) {
+    const spreadRadius = 3;
+    const spreadCount = 0;
+
+    for (const enemy of this.enemies) {
+      if (enemy === sourceEnemy || !enemy.isAlive || enemy.isDying) continue;
+
+      const dist = MathUtils.distanceXZ(position, enemy.mesh.position);
+      if (dist <= spreadRadius && spreadCount < 3) {
+        // Only spread if enemy doesn't already have poison
+        if (!enemy.hasStatusEffect(StatusEffectTypes.POISON)) {
+          enemy.applyStatusEffect(StatusEffectTypes.POISON, 1);
+
+          // Visual effect for spread
+          this.particleSystem.emitBurst(enemy.mesh.position, 6, {
+            color: 0x32cd32,
+            speed: 1,
+            lifetime: 0.3,
+            startScale: 0.1,
+            endScale: 0,
+            gravity: -2
+          });
+        }
+      }
     }
   }
 }

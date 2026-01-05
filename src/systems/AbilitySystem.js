@@ -1,8 +1,11 @@
+import { StatusEffectTypes } from './StatusEffectSystem.js';
+
 export const AbilityCategories = {
   ATTACK: 'attack',
   DEFENSE: 'defense',
   UTILITY: 'utility',
-  SPECIAL: 'special'
+  SPECIAL: 'special',
+  ELEMENTAL: 'elemental'
 };
 
 export const Abilities = {
@@ -258,6 +261,130 @@ export const Abilities = {
     apply: (player) => {
       player.attackRange *= 1.2;
     }
+  },
+
+  // ==========================================
+  // ELEMENTAL ABILITIES
+  // ==========================================
+
+  FIRE_ARROWS: {
+    id: 'fire_arrows',
+    name: 'Fire Arrows',
+    description: 'Arrows burn enemies (DoT, stacks)',
+    icon: '🔥',
+    category: AbilityCategories.ELEMENTAL,
+    maxStacks: 1,
+    apply: (player) => {
+      player.fireArrows = true;
+      player.elementalType = StatusEffectTypes.BURN;
+    }
+  },
+
+  SCORCH: {
+    id: 'scorch',
+    name: 'Scorch',
+    description: '+20% burn damage, +1s duration',
+    icon: '🌋',
+    category: AbilityCategories.ELEMENTAL,
+    maxStacks: 3,
+    requires: 'fire_arrows',
+    apply: (player) => {
+      player.burnDamageMultiplier = (player.burnDamageMultiplier || 1) * 1.2;
+      player.burnDurationBonus = (player.burnDurationBonus || 0) + 1;
+    }
+  },
+
+  INFERNO: {
+    id: 'inferno',
+    name: 'Inferno',
+    description: 'Burning enemies explode on death',
+    icon: '💥',
+    category: AbilityCategories.ELEMENTAL,
+    maxStacks: 1,
+    requires: 'fire_arrows',
+    apply: (player) => {
+      player.infernoExplosion = true;
+    }
+  },
+
+  ICE_ARROWS: {
+    id: 'ice_arrows',
+    name: 'Ice Arrows',
+    description: 'Arrows freeze enemies (slow, stacks)',
+    icon: '❄️',
+    category: AbilityCategories.ELEMENTAL,
+    maxStacks: 1,
+    apply: (player) => {
+      player.iceArrows = true;
+      player.elementalType = StatusEffectTypes.FREEZE;
+    }
+  },
+
+  FROSTBITE: {
+    id: 'frostbite',
+    name: 'Frostbite',
+    description: '+15% slow effect, +1s duration',
+    icon: '🧊',
+    category: AbilityCategories.ELEMENTAL,
+    maxStacks: 3,
+    requires: 'ice_arrows',
+    apply: (player) => {
+      player.freezeSlowBonus = (player.freezeSlowBonus || 0) + 0.15;
+      player.freezeDurationBonus = (player.freezeDurationBonus || 0) + 1;
+    }
+  },
+
+  SHATTER: {
+    id: 'shatter',
+    name: 'Shatter',
+    description: 'Frozen enemies take +30% damage',
+    icon: '💎',
+    category: AbilityCategories.ELEMENTAL,
+    maxStacks: 1,
+    requires: 'ice_arrows',
+    apply: (player) => {
+      player.shatterBonus = true;
+    }
+  },
+
+  POISON_ARROWS: {
+    id: 'poison_arrows',
+    name: 'Poison Arrows',
+    description: 'Arrows poison enemies (DoT, stacks)',
+    icon: '☠️',
+    category: AbilityCategories.ELEMENTAL,
+    maxStacks: 1,
+    apply: (player) => {
+      player.poisonArrows = true;
+      player.elementalType = StatusEffectTypes.POISON;
+    }
+  },
+
+  VIRULENCE: {
+    id: 'virulence',
+    name: 'Virulence',
+    description: '+25% poison damage, +2s duration',
+    icon: '🦠',
+    category: AbilityCategories.ELEMENTAL,
+    maxStacks: 3,
+    requires: 'poison_arrows',
+    apply: (player) => {
+      player.poisonDamageMultiplier = (player.poisonDamageMultiplier || 1) * 1.25;
+      player.poisonDurationBonus = (player.poisonDurationBonus || 0) + 2;
+    }
+  },
+
+  PLAGUE: {
+    id: 'plague',
+    name: 'Plague',
+    description: 'Poison spreads to nearby enemies',
+    icon: '🌫️',
+    category: AbilityCategories.ELEMENTAL,
+    maxStacks: 1,
+    requires: 'poison_arrows',
+    apply: (player) => {
+      player.plagueSpread = true;
+    }
   }
 };
 
@@ -270,7 +397,17 @@ export class AbilitySystem {
   getRandomAbilities(count = 3, player) {
     const available = this.abilityList.filter(ability => {
       const currentStacks = this.acquiredAbilities.get(ability.id) || 0;
-      return currentStacks < ability.maxStacks;
+
+      // Check if ability is at max stacks
+      if (currentStacks >= ability.maxStacks) return false;
+
+      // Check if ability has a requirement that hasn't been acquired
+      if (ability.requires) {
+        const hasRequired = this.acquiredAbilities.has(ability.requires);
+        if (!hasRequired) return false;
+      }
+
+      return true;
     });
 
     const shuffled = [...available].sort(() => Math.random() - 0.5);

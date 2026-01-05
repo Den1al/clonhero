@@ -223,6 +223,86 @@ export class ParticleSystem {
     });
   }
 
+  // Elemental effect emissions
+
+  emitBurnEffect(position) {
+    // Rising flame particles
+    for (let i = 0; i < 4; i++) {
+      this.emit({
+        position: position.clone().add(new THREE.Vector3(
+          (Math.random() - 0.5) * 0.3,
+          0,
+          (Math.random() - 0.5) * 0.3
+        )),
+        color: Math.random() > 0.5 ? 0xff4500 : 0xff6600,
+        speed: MathUtils.randomRange(1, 2),
+        lifetime: 0.5,
+        startScale: 0.15,
+        endScale: 0.05,
+        gravity: -4, // Float upward
+        elevation: 1,
+        startOpacity: 0.9,
+        endOpacity: 0
+      });
+    }
+  }
+
+  emitFreezeEffect(position) {
+    // Crystalline ice particles
+    for (let i = 0; i < 5; i++) {
+      const angle = (i / 5) * Math.PI * 2;
+      this.emit({
+        position: position.clone(),
+        color: Math.random() > 0.5 ? 0x00bfff : 0x87ceeb,
+        speed: MathUtils.randomRange(0.5, 1.5),
+        lifetime: 0.6,
+        startScale: 0.12,
+        endScale: 0,
+        gravity: 3,
+        angle,
+        elevation: 0.2,
+        startOpacity: 0.8,
+        endOpacity: 0
+      });
+    }
+  }
+
+  emitPoisonEffect(position) {
+    // Bubbling toxic particles
+    for (let i = 0; i < 3; i++) {
+      this.emit({
+        position: position.clone().add(new THREE.Vector3(
+          (Math.random() - 0.5) * 0.4,
+          0,
+          (Math.random() - 0.5) * 0.4
+        )),
+        color: Math.random() > 0.5 ? 0x32cd32 : 0x9acd32,
+        speed: MathUtils.randomRange(0.8, 1.5),
+        lifetime: 0.7,
+        startScale: 0.1,
+        endScale: 0.18, // Grow like bubbles
+        gravity: -1.5,
+        elevation: 0.5,
+        startOpacity: 0.7,
+        endOpacity: 0
+      });
+    }
+  }
+
+  emitStatusEffectTick(position, type) {
+    switch (type) {
+      case 'burn':
+        this.emitBurnEffect(position);
+        break;
+      case 'freeze':
+        this.emitFreezeEffect(position);
+        break;
+      case 'poison':
+        this.emitPoisonEffect(position);
+        break;
+    }
+  }
+
   update(delta) {
     const toRelease = [];
 

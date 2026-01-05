@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Clonhero - Roguelike Shooter</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #1a1a2e;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    #game-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    #game-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* UI Overlay */
+    #ui-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    #ui-overlay > * {
+      pointer-events: auto;
+    }
+
+    /* Health Bar */
+    #health-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #health-icon {
+      font-size: 24px;
+    }
+
+    #health-bar-bg {
+      width: 150px;
+      height: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #fff;
+    }
+
+    #health-bar {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, #e74c3c, #c0392b);
+      transition: width 0.3s ease;
+    }
+
+    /* XP Bar */
+    #xp-container {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    #level-display {
+      color: #f1c40f;
+      font-size: 16px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    #xp-bar-bg {
+      width: 300px;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid #f1c40f;
+    }
+
+    #xp-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(to right, #f39c12, #f1c40f);
+      transition: width 0.2s ease;
+    }
+
+    /* Stage Info */
+    #stage-info {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      color: #fff;
+      font-size: 18px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Pause Button */
+    #pause-btn {
+      position: absolute;
+      top: 50px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #pause-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Ability Icons */
+    #ability-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 80%;
+    }
+
+    .ability-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid #3498db;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    /* Virtual Joystick */
+    #joystick-zone {
+      position: absolute;
+      bottom: 80px;
+      left: 20px;
+      width: 150px;
+      height: 150px;
+      pointer-events: auto;
+    }
+
+    #joystick-base {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #joystick-stick {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      transition: none;
+    }
+
+    /* Menus */
+    .menu-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 100;
+    }
+
+    .menu-overlay.hidden {
+      display: none;
+    }
+
+    .menu-title {
+      font-size: 48px;
+      color: #f1c40f;
+      text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+
+    .menu-btn {
+      padding: 15px 40px;
+      font-size: 24px;
+      background: linear-gradient(to bottom, #3498db, #2980b9);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .menu-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .menu-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Level Up Screen */
+    #levelup-screen {
+      z-index: 150;
+    }
+
+    #levelup-title {
+      font-size: 36px;
+      color: #f1c40f;
+      text-shadow: 0 0 20px #f1c40f;
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    #ability-choices {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 90%;
+    }
+
+    .ability-card {
+      width: 200px;
+      padding: 20px;
+      background: linear-gradient(to bottom, #2c3e50, #1a252f);
+      border: 3px solid #3498db;
+      border-radius: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .ability-card:hover {
+      transform: translateY(-10px);
+      border-color: #f1c40f;
+      box-shadow: 0 10px 30px rgba(241, 196, 15, 0.3);
+    }
+
+    .ability-card-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .ability-card-name {
+      font-size: 18px;
+      color: #fff;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .ability-card-desc {
+      font-size: 14px;
+      color: #bdc3c7;
+    }
+
+    /* Game Over / Victory */
+    #gameover-screen .menu-title,
+    #victory-screen .menu-title {
+      font-size: 56px;
+    }
+
+    #gameover-screen .menu-title {
+      color: #e74c3c;
+    }
+
+    #victory-screen .menu-title {
+      color: #2ecc71;
+    }
+
+    .stats-container {
+      color: #fff;
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .stats-container p {
+      margin: 5px 0;
+    }
+
+    /* Damage Numbers */
+    .damage-number {
+      position: absolute;
+      color: #fff;
+      font-size: 20px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+      animation: floatUp 1s ease-out forwards;
+      z-index: 50;
+    }
+
+    .damage-number.crit {
+      color: #f1c40f;
+      font-size: 28px;
+    }
+
+    @keyframes floatUp {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.5);
+      }
+    }
+
+    @keyframes xpCollectedAnim {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+      80% {
+        opacity: 1;
+        transform: translate(-50%, -30%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -100%) scale(0.8);
+      }
+    }
+
+    /* Wave Announcement */
+    #wave-announcement {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: 36px;
+      font-weight: bold;
+      text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    #wave-announcement.show {
+      animation: waveAnnounce 2s ease-out forwards;
+    }
+
+    @keyframes waveAnnounce {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+      80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      #health-bar-bg {
+        width: 100px;
+      }
+
+      #xp-bar-bg {
+        width: 200px;
+      }
+
+      .menu-title {
+        font-size: 32px;
+      }
+
+      .menu-btn {
+        padding: 12px 30px;
+        font-size: 18px;
+      }
+
+      .ability-card {
+        width: 150px;
+        padding: 15px;
+      }
+
+      .ability-card-icon {
+        font-size: 36px;
+      }
+
+      .ability-card-name {
+        font-size: 14px;
+      }
+
+      .ability-card-desc {
+        font-size: 12px;
+      }
+
+      #stage-info {
+        font-size: 14px;
+      }
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-y1gKLHQc.js"></script>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+
+    <div id="ui-overlay">
+      <!-- Health -->
+      <div id="health-container">
+        <span id="health-icon">❤️</span>
+        <div id="health-bar-bg">
+          <div id="health-bar"></div>
+        </div>
+      </div>
+
+      <!-- XP -->
+      <div id="xp-container">
+        <span id="level-display">Level 1</span>
+        <div id="xp-bar-bg">
+          <div id="xp-bar"></div>
+        </div>
+      </div>
+
+      <!-- Stage Info -->
+      <div id="stage-info">Stage 1 - Room 1</div>
+
+      <!-- Pause Button -->
+      <button id="pause-btn">⏸</button>
+
+      <!-- Ability Bar -->
+      <div id="ability-bar"></div>
+
+      <!-- Virtual Joystick (mobile) -->
+      <div id="joystick-zone">
+        <div id="joystick-base">
+          <div id="joystick-stick"></div>
+        </div>
+      </div>
+
+      <!-- Wave Announcement -->
+      <div id="wave-announcement"></div>
+    </div>
+
+    <!-- Start Menu -->
+    <div id="start-menu" class="menu-overlay">
+      <h1 class="menu-title">🏹 CLONHERO</h1>
+      <button id="start-btn" class="menu-btn">▶ Play</button>
+    </div>
+
+    <!-- Pause Menu -->
+    <div id="pause-menu" class="menu-overlay hidden">
+      <h1 class="menu-title">⏸ Paused</h1>
+      <button id="resume-btn" class="menu-btn">▶ Resume</button>
+      <button id="quit-btn" class="menu-btn">🚪 Quit</button>
+    </div>
+
+    <!-- Level Up Screen -->
+    <div id="levelup-screen" class="menu-overlay hidden">
+      <h1 id="levelup-title">⬆️ LEVEL UP!</h1>
+      <div id="ability-choices"></div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameover-screen" class="menu-overlay hidden">
+      <h1 class="menu-title">💀 GAME OVER</h1>
+      <div class="stats-container">
+        <p>Level: <span id="go-level">1</span></p>
+        <p>Enemies Killed: <span id="go-kills">0</span></p>
+        <p>Time: <span id="go-time">0:00</span></p>
+      </div>
+      <button id="restart-btn" class="menu-btn">🔄 Restart</button>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="victory-screen" class="menu-overlay hidden">
+      <h1 class="menu-title">🎉 VICTORY!</h1>
+      <div class="stats-container">
+        <p>Level: <span id="vic-level">1</span></p>
+        <p>Enemies Killed: <span id="vic-kills">0</span></p>
+        <p>Time: <span id="vic-time">0:00</span></p>
+      </div>
+      <button id="victory-restart-btn" class="menu-btn">🔄 Play Again</button>
+    </div>
+  </div>
+
+</body>
+</html>
