@@ -3,31 +3,31 @@ import { MathUtils } from '../utils/MathUtils.js';
 
 const StageConfigs = [
   {
-    name: 'Forest Clearing',
+    name: 'Void Station',
     rooms: 10,
     enemyTypes: [EnemyTypes.CHASER, EnemyTypes.SHOOTER],
     bossType: EnemyTypes.BOSS,
     difficultyMultiplier: 1.0,
-    floorColor: 0x2d5a27,
-    wallColor: 0x1a3d17
+    floorColor: 0x12121e,  // Deep space dark (abeles.dev style)
+    wallColor: 0x1a1a2c
   },
   {
-    name: 'Dark Caves',
+    name: 'Neural Network',
     rooms: 12,
     enemyTypes: [EnemyTypes.CHASER, EnemyTypes.SHOOTER, EnemyTypes.BOMBER],
     bossType: EnemyTypes.BOSS,
     difficultyMultiplier: 1.3,
-    floorColor: 0x3d3d3d,
-    wallColor: 0x2a2a2a
+    floorColor: 0x14141f,  // Slightly different dark
+    wallColor: 0x1c1c2a
   },
   {
-    name: 'Ancient Ruins',
+    name: 'Core Systems',
     rooms: 15,
     enemyTypes: [EnemyTypes.CHASER, EnemyTypes.SHOOTER, EnemyTypes.BOMBER, EnemyTypes.SPAWNER, EnemyTypes.TANK],
     bossType: EnemyTypes.BOSS,
     difficultyMultiplier: 1.6,
-    floorColor: 0x5c4a3d,
-    wallColor: 0x3d3228
+    floorColor: 0x161622,  // Deep purple-dark
+    wallColor: 0x1e1e30
   }
 ];
 

@@ -13,13 +13,13 @@ export class Arena {
   }
 
   createFloor() {
-    // Main floor with rich dark emerald color
+    // Main floor - deep space dark (abeles.dev style)
     const floorGeometry = new THREE.PlaneGeometry(this.size, this.size, 32, 32);
     const floorMaterial = new THREE.MeshStandardMaterial({
-      color: 0x1a3a2e,
-      roughness: 0.85,
-      metalness: 0.15,
-      envMapIntensity: 0.5
+      color: 0x12121e,
+      roughness: 0.9,
+      metalness: 0.1,
+      envMapIntensity: 0.3
     });
 
     this.floor = new THREE.Mesh(floorGeometry, floorMaterial);
@@ -27,15 +27,15 @@ export class Arena {
     this.floor.receiveShadow = true;
     this.scene.add(this.floor);
 
-    // Enhanced grid with glowing effect
+    // Grid with teal glow (abeles.dev style)
     const gridSize = this.size;
     const divisions = 20;
     const gridGeometry = new THREE.PlaneGeometry(gridSize, gridSize, divisions, divisions);
     const gridMaterial = new THREE.MeshBasicMaterial({
-      color: 0x22d3ee,
+      color: 0x6fdac9,
       wireframe: true,
       transparent: true,
-      opacity: 0.08
+      opacity: 0.06
     });
 
     this.grid = new THREE.Mesh(gridGeometry, gridMaterial);
@@ -43,12 +43,12 @@ export class Arena {
     this.grid.position.y = 0.02;
     this.scene.add(this.grid);
 
-    // Add subtle inner glow ring
+    // Subtle inner glow ring - purple (abeles.dev style)
     const glowRingGeometry = new THREE.RingGeometry(this.size * 0.35, this.size * 0.45, 64);
     const glowRingMaterial = new THREE.MeshBasicMaterial({
-      color: 0x6366f1,
+      color: 0xa989f5,
       transparent: true,
-      opacity: 0.1,
+      opacity: 0.08,
       side: THREE.DoubleSide
     });
     this.glowRing = new THREE.Mesh(glowRingGeometry, glowRingMaterial);
@@ -62,21 +62,21 @@ export class Arena {
     const wallThickness = 0.6;
     const halfSize = this.size / 2;
 
-    // Wall material with sleek dark appearance and subtle metallic sheen
+    // Wall material - deep purple-dark (abeles.dev style)
     const wallMaterial = new THREE.MeshStandardMaterial({
-      color: 0x1a2a3e,
-      roughness: 0.6,
-      metalness: 0.4,
-      envMapIntensity: 0.8
+      color: 0x1a1a2c,
+      roughness: 0.7,
+      metalness: 0.3,
+      envMapIntensity: 0.5
     });
 
-    // Accent trim material
+    // Accent trim material - purple glow (abeles.dev style)
     const trimMaterial = new THREE.MeshStandardMaterial({
-      color: 0x6366f1,
+      color: 0xa989f5,
       roughness: 0.3,
-      metalness: 0.7,
-      emissive: 0x6366f1,
-      emissiveIntensity: 0.2
+      metalness: 0.6,
+      emissive: 0xa989f5,
+      emissiveIntensity: 0.15
     });
 
     const wallConfigs = [
@@ -114,9 +114,9 @@ export class Arena {
     ];
 
     const pillarMaterial = new THREE.MeshStandardMaterial({
-      color: 0x252540,
-      roughness: 0.5,
-      metalness: 0.5
+      color: 0x1a1a28,
+      roughness: 0.6,
+      metalness: 0.4
     });
 
     for (const pos of cornerPositions) {
@@ -129,12 +129,12 @@ export class Arena {
       this.scene.add(pillar);
       this.decorations.push(pillar);
 
-      // Glowing ring on pillar
+      // Glowing ring on pillar - teal (abeles.dev style)
       const ringGeometry = new THREE.TorusGeometry(0.4, 0.04, 8, 24);
       const ringMaterial = new THREE.MeshStandardMaterial({
-        color: 0x22d3ee,
-        emissive: 0x22d3ee,
-        emissiveIntensity: 0.5,
+        color: 0x6fdac9,
+        emissive: 0x6fdac9,
+        emissiveIntensity: 0.4,
         roughness: 0.2,
         metalness: 0.8
       });
@@ -158,16 +158,19 @@ export class Arena {
     // Removed corner lights for performance - scene lighting is sufficient
     this.cornerLights = [];
 
-    // Reduced particle count for better performance
+    // Reduced particle count for better performance - teal/purple mix (abeles.dev style)
     const particleCount = 12;
     const particleGeometry = new THREE.CircleGeometry(0.06, 6);
-    const particleMaterial = new THREE.MeshBasicMaterial({
-      color: 0x22d3ee,
-      transparent: true,
-      opacity: 0.25
-    });
 
     for (let i = 0; i < particleCount; i++) {
+      // Alternate between teal and purple particles
+      const isTeal = i % 2 === 0;
+      const particleMaterial = new THREE.MeshBasicMaterial({
+        color: isTeal ? 0x6fdac9 : 0xa989f5,
+        transparent: true,
+        opacity: 0.3
+      });
+
       const particle = new THREE.Mesh(particleGeometry, particleMaterial);
       const angle = (i / particleCount) * Math.PI * 2;
       const radius = this.size / 2 - 3;

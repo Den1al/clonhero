@@ -28,13 +28,13 @@ export class GameScene {
     });
     this.renderer.setSize(this.width, this.height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setClearColor(0x0a0a0f);
+    this.renderer.setClearColor(0x0a0a14); // Deep space dark blue
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     // Enhanced tone mapping for better colors
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.2;
+    this.renderer.toneMappingExposure = 1.1;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
   }
 
@@ -59,20 +59,20 @@ export class GameScene {
 
   setupScene() {
     this.scene = new THREE.Scene();
-    // Deeper, more atmospheric fog with purple tint
-    this.scene.fog = new THREE.FogExp2(0x0f0f1a, 0.025);
+    // Deep space fog matching abeles.dev
+    this.scene.fog = new THREE.FogExp2(0x0a0a14, 0.02);
 
-    // Add subtle background gradient effect
-    this.scene.background = new THREE.Color(0x0a0a0f);
+    // Deep space background
+    this.scene.background = new THREE.Color(0x0a0a14);
   }
 
   setupLighting() {
-    // Hemisphere light provides natural sky/ground variation - efficient
-    const hemiLight = new THREE.HemisphereLight(0x6366f1, 0x1a1a2e, 0.5);
+    // Hemisphere light - purple sky / dark ground (abeles.dev style)
+    const hemiLight = new THREE.HemisphereLight(0xa989f5, 0x0a0a14, 0.4);
     this.scene.add(hemiLight);
 
-    // Main directional light with reduced shadow map for performance
-    const directionalLight = new THREE.DirectionalLight(0xfff5e6, 1.0);
+    // Main directional light - slightly warm
+    const directionalLight = new THREE.DirectionalLight(0xffeedd, 0.9);
     directionalLight.position.set(10, 25, 10);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 1024;
@@ -87,8 +87,8 @@ export class GameScene {
     this.scene.add(directionalLight);
     this.directionalLight = directionalLight;
 
-    // Fill light from opposite side - no shadows needed
-    const fillLight = new THREE.DirectionalLight(0x6366f1, 0.4);
+    // Fill light - teal accent (abeles.dev style)
+    const fillLight = new THREE.DirectionalLight(0x6fdac9, 0.3);
     fillLight.position.set(-10, 15, -10);
     this.scene.add(fillLight);
 
