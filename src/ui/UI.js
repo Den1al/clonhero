@@ -17,12 +17,26 @@ export class UI {
       startMenu: document.getElementById('start-menu'),
       pauseMenu: document.getElementById('pause-menu'),
       settingsMenu: document.getElementById('settings-menu'),
+      helpMenu: document.getElementById('help-menu'),
       levelupScreen: document.getElementById('levelup-screen'),
       gameoverScreen: document.getElementById('gameover-screen'),
       victoryScreen: document.getElementById('victory-screen'),
 
       startBtn: document.getElementById('start-btn'),
       settingsBtn: document.getElementById('settings-btn'),
+      helpBtn: document.getElementById('help-btn'),
+      pauseHelpBtn: document.getElementById('pause-help-btn'),
+      helpBackBtn: document.getElementById('help-back-btn'),
+      helpAbilityDetail: document.getElementById('help-ability-detail'),
+      helpAbilityDetailBackdrop: document.getElementById('help-ability-detail-backdrop'),
+      helpAbilityDetailClose: document.getElementById('help-ability-detail-close'),
+      helpAbilityDetailIcon: document.getElementById('help-ability-detail-icon'),
+      helpAbilityDetailTitle: document.getElementById('help-ability-detail-title'),
+      helpAbilityDetailCategory: document.getElementById('help-ability-detail-category'),
+      helpAbilityDetailDesc: document.getElementById('help-ability-detail-desc'),
+      helpAbilityDetailStacks: document.getElementById('help-ability-detail-stacks'),
+      helpAbilityDetailRequires: document.getElementById('help-ability-detail-requires'),
+      helpAbilityDetailRequiresName: document.getElementById('help-ability-detail-requires-name'),
       pauseSettingsBtn: document.getElementById('pause-settings-btn'),
       settingsBackBtn: document.getElementById('settings-back-btn'),
       resumeBtn: document.getElementById('resume-btn'),
@@ -154,6 +168,24 @@ export class UI {
       this.hideSettingsMenu();
     });
 
+    // Help buttons
+    this.elements.helpBtn.addEventListener('click', () => {
+      this.previousMenu = 'start';
+      this.showHelpMenu();
+    });
+
+    this.elements.pauseHelpBtn.addEventListener('click', () => {
+      this.previousMenu = 'pause';
+      this.showHelpMenu();
+    });
+
+    this.elements.helpBackBtn.addEventListener('click', () => {
+      this.hideHelpMenu();
+    });
+
+    // Ability detail popup
+    this.setupAbilityDetailPopup();
+
     // Settings controls
     this.elements.musicToggle.addEventListener('click', () => {
       const enabled = Audio.toggleMusic();
@@ -257,6 +289,76 @@ export class UI {
     } else if (this.previousMenu === 'pause') {
       this.elements.pauseMenu.classList.remove('hidden');
     }
+  }
+
+  showHelpMenu() {
+    this.elements.startMenu.classList.add('hidden');
+    this.elements.pauseMenu.classList.add('hidden');
+    this.elements.helpMenu.classList.remove('hidden');
+  }
+
+  hideHelpMenu() {
+    this.elements.helpMenu.classList.add('hidden');
+    this.hideAbilityDetail();
+
+    if (this.previousMenu === 'start') {
+      this.elements.startMenu.classList.remove('hidden');
+    } else if (this.previousMenu === 'pause') {
+      this.elements.pauseMenu.classList.remove('hidden');
+    }
+  }
+
+  setupAbilityDetailPopup() {
+    // Get all ability tags
+    const abilityTags = document.querySelectorAll('.help-ability-tag[data-ability]');
+
+    abilityTags.forEach(tag => {
+      tag.addEventListener('click', () => {
+        const data = {
+          icon: tag.dataset.icon,
+          name: tag.dataset.name,
+          desc: tag.dataset.desc,
+          category: tag.dataset.category,
+          stacks: tag.dataset.stacks,
+          requires: tag.dataset.requires || null
+        };
+        this.showAbilityDetail(data);
+        Audio.play('abilitySelect');
+      });
+    });
+
+    // Close button
+    this.elements.helpAbilityDetailClose.addEventListener('click', () => {
+      this.hideAbilityDetail();
+    });
+
+    // Backdrop click to close
+    this.elements.helpAbilityDetailBackdrop.addEventListener('click', () => {
+      this.hideAbilityDetail();
+    });
+  }
+
+  showAbilityDetail(data) {
+    this.elements.helpAbilityDetailIcon.textContent = data.icon;
+    this.elements.helpAbilityDetailTitle.textContent = data.name;
+    this.elements.helpAbilityDetailCategory.textContent = data.category;
+    this.elements.helpAbilityDetailDesc.textContent = data.desc;
+    this.elements.helpAbilityDetailStacks.textContent = data.stacks;
+
+    if (data.requires) {
+      this.elements.helpAbilityDetailRequires.style.display = 'flex';
+      this.elements.helpAbilityDetailRequiresName.textContent = data.requires;
+    } else {
+      this.elements.helpAbilityDetailRequires.style.display = 'none';
+    }
+
+    this.elements.helpAbilityDetailBackdrop.classList.add('show');
+    this.elements.helpAbilityDetail.classList.add('show');
+  }
+
+  hideAbilityDetail() {
+    this.elements.helpAbilityDetailBackdrop.classList.remove('show');
+    this.elements.helpAbilityDetail.classList.remove('show');
   }
 
   on(event, callback) {
@@ -440,6 +542,7 @@ export class UI {
     this.elements.startMenu.classList.add('hidden');
     this.elements.pauseMenu.classList.add('hidden');
     this.elements.settingsMenu.classList.add('hidden');
+    this.elements.helpMenu.classList.add('hidden');
     this.elements.levelupScreen.classList.add('hidden');
     this.elements.gameoverScreen.classList.add('hidden');
     this.elements.victoryScreen.classList.add('hidden');
