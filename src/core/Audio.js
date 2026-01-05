@@ -24,6 +24,9 @@ class AudioManager {
     this.sounds.abilitySelect = this.createSound(this.generateAbilitySelectSound(), 0.5);
     this.sounds.doorOpen = this.createSound(this.generateDoorOpenSound(), 0.4);
     this.sounds.bossSpawn = this.createSound(this.generateBossSpawnSound(), 0.6);
+    this.sounds.gateSpawn = this.createSound(this.generateGateSpawnSound(), 0.5);
+    this.sounds.gateEnter = this.createSound(this.generateGateEnterSound(), 0.6);
+    this.sounds.gateTransition = this.createSound(this.generateGateTransitionSound(), 0.7);
 
     this.music = new Howl({
       src: [this.generateMusicDataUrl()],
@@ -241,6 +244,76 @@ class AudioManager {
 
       const noise = (Math.random() * 2 - 1) * 0.1 * envelope;
       buffer[i] = (Math.sin(2 * Math.PI * freq * t) * 0.5 + noise) * envelope;
+    }
+    return this.bufferToWav(buffer);
+  }
+
+  generateGateSpawnSound() {
+    // Mystical ascending portal sound
+    const buffer = new Float32Array(44100 * 0.8);
+    for (let i = 0; i < buffer.length; i++) {
+      const t = i / 44100;
+      // Rising frequency sweep
+      const freq = 200 + t * 600;
+      // Soft attack, sustained
+      let envelope = 0;
+      if (t < 0.1) envelope = t * 10;
+      else if (t < 0.5) envelope = 1;
+      else envelope = Math.exp(-(t - 0.5) * 4);
+
+      // Layered harmonics for ethereal sound
+      const tone1 = Math.sin(2 * Math.PI * freq * t) * 0.3;
+      const tone2 = Math.sin(2 * Math.PI * freq * 1.5 * t) * 0.15;
+      const tone3 = Math.sin(2 * Math.PI * freq * 2 * t) * 0.1;
+      const shimmer = Math.sin(2 * Math.PI * (freq * 4) * t) * 0.05 * Math.sin(t * 20);
+
+      buffer[i] = (tone1 + tone2 + tone3 + shimmer) * envelope;
+    }
+    return this.bufferToWav(buffer);
+  }
+
+  generateGateEnterSound() {
+    // Whooshing portal entry sound
+    const buffer = new Float32Array(44100 * 0.4);
+    for (let i = 0; i < buffer.length; i++) {
+      const t = i / 44100;
+      // Descending whoosh
+      const freq = 400 - t * 200;
+      let envelope = Math.exp(-t * 6);
+
+      // Breathy whoosh with tone
+      const tone = Math.sin(2 * Math.PI * freq * t) * 0.4;
+      const noise = (Math.random() * 2 - 1) * 0.2;
+      const filtered = Math.sin(2 * Math.PI * 150 * t) * noise;
+
+      buffer[i] = (tone + filtered) * envelope;
+    }
+    return this.bufferToWav(buffer);
+  }
+
+  generateGateTransitionSound() {
+    // Full transition whoosh - longer and more dramatic
+    const buffer = new Float32Array(44100 * 1.2);
+    for (let i = 0; i < buffer.length; i++) {
+      const t = i / 44100;
+
+      // Complex frequency sweep
+      const freq1 = 300 + Math.sin(t * 10) * 100;
+      const freq2 = 150 + t * 200;
+
+      let envelope = 0;
+      if (t < 0.2) envelope = t * 5;
+      else if (t < 0.8) envelope = 1;
+      else envelope = Math.exp(-(t - 0.8) * 5);
+
+      // Layered ethereal sounds
+      const tone1 = Math.sin(2 * Math.PI * freq1 * t) * 0.25;
+      const tone2 = Math.sin(2 * Math.PI * freq2 * t) * 0.2;
+      const harmonic = Math.sin(2 * Math.PI * freq1 * 2 * t) * 0.1;
+      const whoosh = (Math.random() * 2 - 1) * 0.15 * Math.exp(-t * 2);
+      const shimmer = Math.sin(2 * Math.PI * 800 * t) * 0.05 * Math.sin(t * 30);
+
+      buffer[i] = (tone1 + tone2 + harmonic + whoosh + shimmer) * envelope;
     }
     return this.bufferToWav(buffer);
   }

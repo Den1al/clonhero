@@ -34,7 +34,30 @@ export class UI {
     this.damageNumbers = [];
     this.callbacks = {};
 
+    // Create screen fade overlay for gate transitions
+    this.screenFadeOverlay = this.createScreenFadeOverlay();
+    this.fadeAnimationId = null;
+
     this.setupEventListeners();
+  }
+
+  createScreenFadeOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'screen-fade-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(111, 218, 201, 0.3), rgba(10, 10, 15, 1));
+      pointer-events: none;
+      z-index: 500;
+      opacity: 0;
+      transition: opacity 0.1s ease-out;
+    `;
+    document.body.appendChild(overlay);
+    return overlay;
   }
 
   setupEventListeners() {
@@ -175,7 +198,7 @@ export class UI {
     this.elements.victoryScreen.classList.add('hidden');
   }
 
-  showWaveAnnouncement(text) {
+  showWaveAnnouncement(text, duration = 2000) {
     this.elements.waveAnnouncement.textContent = text;
     this.elements.waveAnnouncement.classList.remove('show');
 
@@ -183,9 +206,14 @@ export class UI {
 
     this.elements.waveAnnouncement.classList.add('show');
 
-    setTimeout(() => {
+    // Clear any existing timeout
+    if (this.announcementTimeout) {
+      clearTimeout(this.announcementTimeout);
+    }
+
+    this.announcementTimeout = setTimeout(() => {
       this.elements.waveAnnouncement.classList.remove('show');
-    }, 2000);
+    }, duration);
   }
 
   showDamageNumber(x, y, damage, isCrit = false) {
@@ -255,6 +283,7 @@ export class UI {
         <span><kbd>S</kbd> Skill</span>
         <span><kbd>E</kbd> Victory</span>
         <span><kbd>X</kbd> Die</span>
+        <span><kbd>R</kbd> Clear Room</span>
       </div>
     `;
     indicator.style.cssText = `
@@ -310,5 +339,76 @@ export class UI {
     document.head.appendChild(style);
 
     document.body.appendChild(indicator);
+  }
+
+  /**
+   * Set screen fade opacity directly (for gate transitions)
+   * @param {number} opacity - 0 to 1
+   */
+  setScreenFade(opacity) {
+    this.screenFadeOverlay.style.opacity = opacity;
+  }
+
+  /**
+   * Animate screen fade in (from black to transparent)
+   * @param {number} duration - Duration in seconds
+   */
+  fadeScreenIn(duration = 0.5) {
+    if (this.fadeAnimationId) {
+      cancelAnimationFrame(this.fadeAnimationId);
+    }
+
+    const startTime = performance.now();
+    const startOpacity = 1;
+
+    const animate = (currentTime) => {
+      const elapsed = (currentTime - startTime) / 1000;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const opacity = startOpacity * (1 - eased);
+
+      this.screenFadeOverlay.style.opacity = opacity;
+
+      if (progress < 1) {
+        this.fadeAnimationId = requestAnimationFrame(animate);
+      } else {
+        this.fadeAnimationId = null;
+      }
+    };
+
+    this.fadeAnimationId = requestAnimationFrame(animate);
+  }
+
+  /**
+   * Animate screen fade out (from transparent to black)
+   * @param {number} duration - Duration in seconds
+   * @param {Function} onComplete - Callback when fade is complete
+   */
+  fadeScreenOut(duration = 0.5, onComplete = null) {
+    if (this.fadeAnimationId) {
+      cancelAnimationFrame(this.fadeAnimationId);
+    }
+
+    const startTime = performance.now();
+
+    const animate = (currentTime) => {
+      const elapsed = (currentTime - startTime) / 1000;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Ease in cubic
+      const eased = progress * progress * progress;
+      this.screenFadeOverlay.style.opacity = eased;
+
+      if (progress < 1) {
+        this.fadeAnimationId = requestAnimationFrame(animate);
+      } else {
+        this.fadeAnimationId = null;
+        if (onComplete) onComplete();
+      }
+    };
+
+    this.fadeAnimationId = requestAnimationFrame(animate);
   }
 }

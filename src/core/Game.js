@@ -9,6 +9,7 @@ import { ProjectileSystem } from '../entities/Projectile.js';
 import { XPGemSystem } from '../entities/XPGem.js';
 import { ParticleSystem } from '../entities/Particle.js';
 import { Arena } from '../entities/Arena.js';
+import { RoomGate } from '../entities/RoomGate.js';
 import { CollisionSystem } from '../systems/CollisionSystem.js';
 import { AbilitySystem } from '../systems/AbilitySystem.js';
 import { WaveSystem } from '../systems/WaveSystem.js';
@@ -60,6 +61,7 @@ export class Game {
     this.collisionSystem = new CollisionSystem();
     this.abilitySystem = new AbilitySystem();
     this.waveSystem = new WaveSystem();
+    this.roomGate = new RoomGate(this.scene.scene);
 
     this.enemies = [];
     this.enemiesKilled = 0;
@@ -67,6 +69,12 @@ export class Game {
 
     this.roomTransitionTimer = 0;
     this.waveStartDelay = 0;
+
+    // Gate transition state
+    this.gateActive = false;
+    this.gateTransitioning = false;
+    this.gateTransitionProgress = 0;
+    this.playerEnteredGate = false;
 
     this.lastTime = 0;
     this.deltaTime = 0;
@@ -104,6 +112,7 @@ export class Game {
     this.particleSystem.clear();
     this.abilitySystem.reset();
     this.waveSystem.reset();
+    this.roomGate.despawn();
 
     for (const enemy of this.enemies) {
       enemy.dispose();
@@ -112,6 +121,12 @@ export class Game {
 
     this.enemiesKilled = 0;
     this.totalTime = 0;
+
+    // Reset gate state
+    this.gateActive = false;
+    this.gateTransitioning = false;
+    this.gateTransitionProgress = 0;
+    this.playerEnteredGate = false;
 
     this.ui.reset();
   }
@@ -126,8 +141,13 @@ export class Game {
     this.xpGemSystem.clear();
     this.particleSystem.clear();
 
-    // Reset transition timer
+    // Reset transition timer and gate state
     this.roomTransitionTimer = 0;
+    this.roomGate.despawn();
+    this.gateActive = false;
+    this.gateTransitioning = false;
+    this.gateTransitionProgress = 0;
+    this.playerEnteredGate = false;
 
     const roomData = this.waveSystem.startRoom();
 
@@ -278,10 +298,13 @@ export class Game {
     this.projectileSystem.update(delta, this.enemies, this.player, this.arenaSize, this.arena.getObstacles());
     this.particleSystem.update(delta);
 
+    // During combat: small pickup radius (must walk over gems to collect)
+    // When gate appears: full magnet range + all gems get magnetized
+    const magnetRange = this.gateActive ? this.player.xpMagnetRange : 0.8;
     const collectedXP = this.xpGemSystem.update(
       delta,
       this.player.mesh.position,
-      this.player.xpMagnetRange
+      magnetRange
     );
 
     if (collectedXP > 0) {
@@ -519,38 +542,79 @@ export class Game {
       this.spawnEnemy(spawnData);
     }
 
-    if (this.waveSystem.isRoomCleared()) {
-      if (this.roomTransitionTimer === 0) {
-        Audio.play('doorOpen');
-        this.ui.showWaveAnnouncement('Room Cleared!');
+    // Handle gate transition animation
+    if (this.gateTransitioning) {
+      this.gateTransitionProgress += delta * 2; // ~0.5 second transition
 
-        const autoCollectedXP = this.xpGemSystem.collectAll();
-        if (autoCollectedXP > 0) {
-          Audio.play('xpPickup');
-          const leveledUp = this.player.addXP(autoCollectedXP);
-          this.ui.updateXP(this.player.xp, this.player.xpToNextLevel);
-          this.ui.showXPCollected(autoCollectedXP);
+      // Screen fade effect via UI
+      this.ui.setScreenFade(Math.min(1, this.gateTransitionProgress));
 
-          if (leveledUp) {
-            // Immediately show level up screen
-            this.showLevelUp();
-            return; // Exit early, level up screen will pause the game
-          }
-        }
-      }
-
-      this.roomTransitionTimer += delta;
-
-      if (this.roomTransitionTimer >= 2) {
-        this.roomTransitionTimer = 0;
+      if (this.gateTransitionProgress >= 1) {
+        // Transition complete - advance to next room
+        this.gateTransitioning = false;
+        this.gateTransitionProgress = 0;
 
         const result = this.waveSystem.advanceRoom();
 
         if (result.type === 'victory') {
+          this.ui.setScreenFade(0);
           this.victory();
         } else {
           this.startRoom();
+          // Fade back in after room loads
+          this.ui.fadeScreenIn(0.5);
         }
+      }
+      return;
+    }
+
+    if (this.waveSystem.isRoomCleared()) {
+      // First frame of room cleared - spawn the gate
+      if (!this.gateActive) {
+        this.gateActive = true;
+        Audio.play('doorOpen');
+        this.ui.showWaveAnnouncement('Room Cleared!');
+
+        // Spawn the gate at the top of the arena FIRST
+        const gatePosition = new THREE.Vector3(0, 0, -this.arenaSize / 2 + 2);
+        this.roomGate.spawn(gatePosition);
+        Audio.play('gateSpawn');
+
+        // Magnetize all XP gems so they fly to the player with visual effect
+        this.xpGemSystem.magnetizeAll(this.player.mesh.position);
+
+        // Show UI hint to go through gate
+        this.ui.showWaveAnnouncement('Enter the Gate!', 3000);
+      }
+
+      // Update gate and check for player entering
+      const gateResult = this.roomGate.update(delta, this.player.mesh.position);
+
+      // Player just entered the gate
+      if (gateResult.playerInside && !this.playerEnteredGate) {
+        this.playerEnteredGate = true;
+        Audio.play('gateEnter');
+      } else if (!gateResult.playerInside) {
+        this.playerEnteredGate = false;
+      }
+
+      // Player has fully entered - trigger transition
+      if (gateResult.shouldTransition) {
+        this.gateTransitioning = true;
+        this.gateTransitionProgress = 0;
+        Audio.play('gateTransition');
+        this.scene.shake(0.3, 0.3);
+
+        // Emit particles for dramatic effect
+        this.particleSystem.emitBurst(this.player.mesh.position, 20, {
+          color: 0x6fdac9,
+          speed: 4,
+          lifetime: 0.8,
+          startScale: 0.2,
+          endScale: 0,
+          gravity: -3,
+          elevation: 0.5
+        });
       }
     } else if (!this.waveSystem.isWaveInProgress() && this.waveSystem.currentWave < this.waveSystem.wavesInRoom) {
       this.waveStartDelay = 1;
@@ -614,7 +678,7 @@ export class Game {
       this.godModeKeyPressed_E = false;
     }
 
-    // D = Die (game over) - using KeyX instead to avoid conflict with movement
+    // X = Die (game over)
     if (this.input.isKeyPressed('KeyX') && !this.godModeKeyPressed_X) {
       this.godModeKeyPressed_X = true;
       this.player.health = 0;
@@ -622,6 +686,44 @@ export class Game {
     } else if (!this.input.isKeyPressed('KeyX')) {
       this.godModeKeyPressed_X = false;
     }
+
+    // R = Clear room (kill all enemies)
+    if (this.input.isKeyPressed('KeyR') && !this.godModeKeyPressed_R) {
+      this.godModeKeyPressed_R = true;
+      this.godModeClearRoom();
+    } else if (!this.input.isKeyPressed('KeyR')) {
+      this.godModeKeyPressed_R = false;
+    }
+  }
+
+  godModeClearRoom() {
+    // Kill all enemies and dispose them
+    for (const enemy of this.enemies) {
+      enemy.health = 0;
+      // Spawn XP gems for each enemy
+      this.xpGemSystem.spawnMultiple(enemy.mesh.position, enemy.xpValue || 10);
+      // Emit death particles
+      const color = enemy.config ? enemy.config.color : 0xe74c3c;
+      this.particleSystem.emitDeath(enemy.mesh.position, color);
+      enemy.dispose();
+    }
+    // Clear the enemies array
+    this.enemies = [];
+
+    // Clear spawn queue
+    this.waveSystem.spawnQueue = [];
+
+    // Force wave system to cleared state
+    this.waveSystem.currentWave = this.waveSystem.wavesInRoom;
+    this.waveSystem.enemiesRemaining = 0;
+    this.waveSystem.roomCleared = true;
+    this.waveSystem.waveInProgress = false;
+
+    // Play sound effect
+    Audio.play('doorOpen');
+
+    // Show feedback
+    this.ui.showWaveAnnouncement('Room Cleared! (God Mode)');
   }
 
   // Helper methods for elemental effects
