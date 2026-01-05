@@ -212,6 +212,31 @@ export class UI {
     }, 1000);
   }
 
+  showXPCollected(amount) {
+    const element = document.createElement('div');
+    element.className = 'xp-collected';
+    element.textContent = `+${Math.round(amount)} XP`;
+    element.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 32px;
+      font-weight: bold;
+      color: #2ecc71;
+      text-shadow: 0 0 10px #27ae60, 0 0 20px #27ae60;
+      animation: xpCollectedAnim 1.5s ease-out forwards;
+      pointer-events: none;
+      z-index: 1000;
+    `;
+
+    document.getElementById('ui-overlay').appendChild(element);
+
+    setTimeout(() => {
+      element.remove();
+    }, 1500);
+  }
+
   formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);

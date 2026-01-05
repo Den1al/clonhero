@@ -469,6 +469,18 @@ export class Game {
       if (this.roomTransitionTimer === 0) {
         Audio.play('doorOpen');
         this.ui.showWaveAnnouncement('Room Cleared!');
+
+        const autoCollectedXP = this.xpGemSystem.collectAll();
+        if (autoCollectedXP > 0) {
+          Audio.play('xpPickup');
+          const leveledUp = this.player.addXP(autoCollectedXP);
+          this.ui.updateXP(this.player.xp, this.player.xpToNextLevel);
+          this.ui.showXPCollected(autoCollectedXP);
+
+          if (leveledUp) {
+            this.pendingLevelUp = true;
+          }
+        }
       }
 
       this.roomTransitionTimer += delta;

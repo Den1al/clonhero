@@ -365,6 +365,25 @@
       }
     }
 
+    @keyframes xpCollectedAnim {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+      80% {
+        opacity: 1;
+        transform: translate(-50%, -30%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -100%) scale(0.8);
+      }
+    }
+
     /* Wave Announcement */
     #wave-announcement {
       position: absolute;

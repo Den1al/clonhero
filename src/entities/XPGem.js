@@ -235,6 +235,25 @@ export class XPGemSystem {
     }
   }
 
+  collectAll() {
+    const toRelease = [];
+    let totalXP = 0;
+
+    for (const gem of this.pool.active) {
+      if (gem.isActive) {
+        totalXP += gem.value;
+        gem.deactivate();
+        toRelease.push(gem);
+      }
+    }
+
+    for (const gem of toRelease) {
+      this.pool.release(gem);
+    }
+
+    return totalXP;
+  }
+
   clear() {
     this.pool.releaseAll();
   }
