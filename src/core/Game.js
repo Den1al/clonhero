@@ -16,6 +16,7 @@ import { AbilitySystem } from '../systems/AbilitySystem.js';
 import { WaveSystem } from '../systems/WaveSystem.js';
 import { UI } from '../ui/UI.js';
 import { MathUtils } from '../utils/MathUtils.js';
+import { scoreboardManager } from '../utils/ScoreboardManager.js';
 
 export const GameState = {
   MENU: 'menu',
@@ -322,10 +323,21 @@ export class Game {
     Audio.stopMusic();
     this.input.setTouchControlsEnabled(false); // Disable touch controls on game over
 
-    this.ui.showGameOver({
+    const stats = {
       level: this.player.level,
       kills: this.enemiesKilled,
-      time: this.totalTime
+      time: this.totalTime,
+      stage: this.waveSystem.currentStage,
+      room: this.waveSystem.currentRoom,
+      victory: false
+    };
+
+    // Save run to scoreboard
+    const savedRun = scoreboardManager.saveRun(stats);
+
+    this.ui.showGameOver({
+      ...stats,
+      score: savedRun.score
     });
   }
 
@@ -334,10 +346,21 @@ export class Game {
     Audio.stopMusic();
     this.input.setTouchControlsEnabled(false); // Disable touch controls on victory
 
-    this.ui.showVictory({
+    const stats = {
       level: this.player.level,
       kills: this.enemiesKilled,
-      time: this.totalTime
+      time: this.totalTime,
+      stage: this.waveSystem.currentStage,
+      room: this.waveSystem.currentRoom,
+      victory: true
+    };
+
+    // Save run to scoreboard
+    const savedRun = scoreboardManager.saveRun(stats);
+
+    this.ui.showVictory({
+      ...stats,
+      score: savedRun.score
     });
   }
 

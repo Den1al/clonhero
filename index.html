@@ -659,6 +659,17 @@
       color: var(--text-primary);
     }
 
+    .toggle-btn.danger {
+      border-color: var(--health-low);
+      color: var(--health-low);
+    }
+
+    .toggle-btn.danger:hover {
+      background: var(--gradient-danger);
+      border-color: var(--health-low);
+      color: var(--text-primary);
+    }
+
     .toggle-btn .toggle-icon {
       font-size: 16px;
     }
@@ -1681,6 +1692,281 @@
     }
 
     /* ========================================
+       SCOREBOARD STYLES
+       ======================================== */
+    .scoreboard-section {
+      width: 100%;
+      max-width: 500px;
+      margin-top: var(--space-lg);
+    }
+
+    .scoreboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-md);
+    }
+
+    .scoreboard-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .scoreboard-stats {
+      display: flex;
+      gap: var(--space-md);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .scoreboard-stats span {
+      color: var(--gold-400);
+    }
+
+    .scoreboard-container {
+      background: var(--surface-glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .scoreboard-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .scoreboard-container::-webkit-scrollbar-track {
+      background: var(--bg-light);
+    }
+
+    .scoreboard-container::-webkit-scrollbar-thumb {
+      background: var(--primary-500);
+      border-radius: var(--radius-full);
+    }
+
+    .scoreboard-empty {
+      padding: var(--space-xl);
+      text-align: center;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 14px;
+    }
+
+    .scoreboard-row {
+      display: grid;
+      grid-template-columns: 40px 1fr 80px 60px;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      align-items: center;
+      border-bottom: 1px solid var(--surface-border);
+      transition: background var(--transition-fast);
+    }
+
+    .scoreboard-row:last-child {
+      border-bottom: none;
+    }
+
+    .scoreboard-row:hover {
+      background: var(--surface-glass-hover);
+    }
+
+    .scoreboard-row.victory {
+      background: linear-gradient(90deg, rgba(16, 133, 72, 0.1), transparent);
+    }
+
+    .scoreboard-row.victory:hover {
+      background: linear-gradient(90deg, rgba(16, 133, 72, 0.15), var(--surface-glass-hover));
+    }
+
+    .scoreboard-rank {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .scoreboard-rank.top-1 { color: var(--gold-400); }
+    .scoreboard-rank.top-2 { color: #c0c0c0; }
+    .scoreboard-rank.top-3 { color: #cd7f32; }
+
+    .scoreboard-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .scoreboard-info-main {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .scoreboard-victory-badge {
+      font-size: 12px;
+    }
+
+    .scoreboard-info-sub {
+      display: flex;
+      gap: var(--space-md);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .scoreboard-info-sub span {
+      white-space: nowrap;
+    }
+
+    .scoreboard-score {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gold-400);
+      text-align: right;
+    }
+
+    .scoreboard-date {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* New score indicator on game over/victory */
+    .stats-score-row {
+      margin-top: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--surface-border);
+    }
+
+    .stats-score-row span {
+      font-size: 24px;
+      color: var(--gold-400);
+      text-shadow: 0 0 20px rgba(252, 163, 38, 0.5);
+    }
+
+    /* Confirmation dialog */
+    .confirm-content {
+      background: var(--surface-glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .confirm-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--health-low);
+      margin-bottom: var(--space-md);
+    }
+
+    .confirm-message {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xl);
+      line-height: 1.5;
+    }
+
+    .confirm-buttons {
+      display: flex;
+      gap: var(--space-md);
+      justify-content: center;
+    }
+
+    .menu-btn.danger-btn {
+      background: var(--gradient-danger);
+      box-shadow: var(--shadow-lg), 0 0 20px rgba(221, 43, 14, 0.3);
+    }
+
+    .menu-btn.danger-btn:hover {
+      box-shadow: var(--shadow-xl), 0 0 40px rgba(221, 43, 14, 0.5);
+    }
+
+    /* Mobile adjustments for scoreboard */
+    @media (max-width: 768px) {
+      .scoreboard-section {
+        max-width: 90%;
+        margin-top: var(--space-md);
+      }
+
+      .scoreboard-container {
+        max-height: 200px;
+      }
+
+      .scoreboard-row {
+        grid-template-columns: 30px 1fr 70px 50px;
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      .scoreboard-rank {
+        font-size: 12px;
+      }
+
+      .scoreboard-info-main {
+        font-size: 12px;
+      }
+
+      .scoreboard-info-sub {
+        font-size: 10px;
+        gap: var(--space-sm);
+      }
+
+      .scoreboard-score {
+        font-size: 14px;
+      }
+
+      .scoreboard-date {
+        font-size: 10px;
+      }
+
+      .scoreboard-title {
+        font-size: 14px;
+      }
+
+      .scoreboard-stats {
+        font-size: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .scoreboard-container {
+        max-height: 160px;
+      }
+
+      .scoreboard-row {
+        grid-template-columns: 24px 1fr 60px;
+      }
+
+      .scoreboard-date {
+        display: none;
+      }
+
+      .scoreboard-info-sub {
+        gap: var(--space-xs);
+      }
+    }
+
+    /* ========================================
        UTILITY CLASSES
        ======================================== */
     .sr-only {
@@ -1744,6 +2030,20 @@
       <h1 class="menu-title">CLONHERO</h1>
       <button id="start-btn" class="menu-btn">Play Game</button>
       <button id="settings-btn" class="menu-btn secondary">Settings</button>
+
+      <!-- Scoreboard Section -->
+      <div id="scoreboard-section" class="scoreboard-section">
+        <div class="scoreboard-header">
+          <span class="scoreboard-title">Recent Runs</span>
+          <div class="scoreboard-stats">
+            <span id="scoreboard-total">0</span> runs
+            <span id="scoreboard-wins">0</span> wins
+          </div>
+        </div>
+        <div id="scoreboard-container" class="scoreboard-container">
+          <div class="scoreboard-empty">No runs yet. Play a game!</div>
+        </div>
+      </div>
     </div>
 
     <!-- Pause Menu -->
@@ -1780,6 +2080,13 @@
           <span class="settings-label">SFX Volume</span>
           <input type="range" id="sfx-volume" class="volume-slider" min="0" max="100" value="50">
         </div>
+        <div class="settings-row">
+          <span class="settings-label">Scoreboard</span>
+          <button id="clear-scoreboard-btn" class="toggle-btn danger">
+            <span class="toggle-icon">&#128465;</span>
+            <span class="toggle-text">Clear</span>
+          </button>
+        </div>
       </div>
       <button id="settings-back-btn" class="menu-btn">Back</button>
     </div>
@@ -1797,6 +2104,7 @@
         <p>Level Reached <span id="go-level">1</span></p>
         <p>Enemies Defeated <span id="go-kills">0</span></p>
         <p>Time Survived <span id="go-time">0:00</span></p>
+        <p class="stats-score-row">Score <span id="go-score">0</span></p>
       </div>
       <button id="restart-btn" class="menu-btn">Try Again</button>
     </div>
@@ -1808,6 +2116,7 @@
         <p>Final Level <span id="vic-level">1</span></p>
         <p>Total Enemies <span id="vic-kills">0</span></p>
         <p>Completion Time <span id="vic-time">0:00</span></p>
+        <p class="stats-score-row">Score <span id="vic-score">0</span></p>
       </div>
       <button id="victory-restart-btn" class="menu-btn">Play Again</button>
     </div>

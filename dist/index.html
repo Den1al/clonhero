@@ -8,85 +8,96 @@
   <title>Clonhero - Roguelike Shooter</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* ========================================
        DESIGN SYSTEM - CSS Custom Properties
+       Inspired by: abeles.dev + GitLab Pajamas
        ======================================== */
     :root {
-      /* Primary Colors - Vibrant Purple/Blue Gaming Palette */
-      --primary-100: #e0e7ff;
-      --primary-200: #c7d2fe;
-      --primary-300: #a5b4fc;
-      --primary-400: #818cf8;
-      --primary-500: #6366f1;
-      --primary-600: #4f46e5;
-      --primary-700: #4338ca;
+      /* Primary Colors - GitLab Purple Palette */
+      --primary-100: #e8e6f0;
+      --primary-200: #c9c4db;
+      --primary-300: #a9a0c6;
+      --primary-400: #7b6fa6;
+      --primary-500: #554488;
+      --primary-600: #463875;
+      --primary-700: #372c5c;
 
-      /* Accent Colors - Electric Cyan */
-      --accent-100: #cffafe;
-      --accent-200: #a5f3fc;
-      --accent-300: #67e8f9;
-      --accent-400: #22d3ee;
-      --accent-500: #06b6d4;
-      --accent-600: #0891b2;
+      /* Accent Colors - GitLab Orange Gradient */
+      --accent-100: #fff0e6;
+      --accent-200: #ffd9bf;
+      --accent-300: #fca326;
+      --accent-400: #fc6d26;
+      --accent-500: #e24329;
+      --accent-600: #c73d24;
 
-      /* Gold/XP Colors */
-      --gold-100: #fef3c7;
-      --gold-200: #fde68a;
-      --gold-300: #fcd34d;
-      --gold-400: #fbbf24;
-      --gold-500: #f59e0b;
-      --gold-600: #d97706;
+      /* Gold/XP Colors - Warm GitLab Orange */
+      --gold-100: #fff5e6;
+      --gold-200: #ffe4bf;
+      --gold-300: #fcd076;
+      --gold-400: #fca326;
+      --gold-500: #fc6d26;
+      --gold-600: #e24329;
 
       /* Health/Damage Colors */
-      --health-high: #10b981;
-      --health-mid: #f59e0b;
-      --health-low: #ef4444;
-      --health-glow: rgba(16, 185, 129, 0.5);
+      --health-high: #108548;
+      --health-mid: #fc6d26;
+      --health-low: #dd2b0e;
+      --health-glow: rgba(16, 133, 72, 0.5);
 
-      /* Background Colors */
-      --bg-deep: #0a0a0f;
-      --bg-dark: #0f0f1a;
-      --bg-medium: #1a1a2e;
-      --bg-light: #25253d;
-      --bg-lighter: #2d2d4a;
+      /* Background Colors - Deep Space (abeles.dev exact) */
+      --bg-deep: #0a0a14;
+      --bg-dark: #0e0e1a;
+      --bg-medium: #121220;
+      --bg-light: #1a1a2c;
+      --bg-lighter: #222238;
 
-      /* Surface Colors (Glassmorphism) */
-      --surface-glass: rgba(255, 255, 255, 0.05);
-      --surface-glass-hover: rgba(255, 255, 255, 0.1);
-      --surface-glass-active: rgba(255, 255, 255, 0.15);
-      --surface-border: rgba(255, 255, 255, 0.1);
-      --surface-border-hover: rgba(255, 255, 255, 0.2);
+      /* Particle Colors (abeles.dev exact) */
+      --particle-purple-200: rgb(169, 137, 245);
+      --particle-teal-200: rgb(111, 218, 201);
+      --particle-purple-300: rgb(119, 89, 194);
+      --particle-teal-300: rgb(16, 177, 177);
+      --glow-cyan: #6fdac9;
+      --glow-purple: #a989f5;
 
-      /* Text Colors */
-      --text-primary: #ffffff;
-      --text-secondary: #a1a1aa;
-      --text-muted: #71717a;
+      /* Surface Colors (Minimal Glass) */
+      --surface-glass: rgba(255, 255, 255, 0.03);
+      --surface-glass-hover: rgba(255, 255, 255, 0.06);
+      --surface-glass-active: rgba(255, 255, 255, 0.09);
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --surface-border-hover: rgba(255, 255, 255, 0.15);
+
+      /* Text Colors - High Contrast */
+      --text-primary: #fafafa;
+      --text-secondary: #8c929d;
+      --text-muted: #626772;
       --text-accent: var(--accent-400);
 
-      /* Shadows */
-      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-      --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
-      --shadow-glow-primary: 0 0 30px rgba(99, 102, 241, 0.4);
-      --shadow-glow-accent: 0 0 30px rgba(34, 211, 238, 0.4);
-      --shadow-glow-gold: 0 0 30px rgba(251, 191, 36, 0.4);
+      /* Shadows - Subtle */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.6);
+      --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.7);
+      --shadow-glow-primary: 0 0 20px rgba(85, 68, 136, 0.4);
+      --shadow-glow-accent: 0 0 20px rgba(252, 109, 38, 0.4);
+      --shadow-glow-gold: 0 0 20px rgba(252, 163, 38, 0.4);
 
-      /* Gradients */
-      --gradient-primary: linear-gradient(135deg, var(--primary-500), var(--primary-700));
-      --gradient-accent: linear-gradient(135deg, var(--accent-400), var(--accent-600));
-      --gradient-gold: linear-gradient(135deg, var(--gold-400), var(--gold-600));
-      --gradient-health: linear-gradient(90deg, var(--health-high), #059669);
-      --gradient-danger: linear-gradient(135deg, #ef4444, #dc2626);
-      --gradient-success: linear-gradient(135deg, #10b981, #059669);
+      /* Gradients - GitLab Style */
+      --gradient-primary: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+      --gradient-accent: linear-gradient(135deg, var(--accent-300), var(--accent-500));
+      --gradient-gold: linear-gradient(135deg, var(--gold-300), var(--gold-500));
+      --gradient-health: linear-gradient(90deg, var(--health-high), #0d6a3d);
+      --gradient-danger: linear-gradient(135deg, #dd2b0e, #ae1800);
+      --gradient-success: linear-gradient(135deg, #108548, #0d6a3d);
       --gradient-surface: linear-gradient(135deg, var(--surface-glass), transparent);
+      --gradient-gitlab: linear-gradient(135deg, #fca326, #fc6d26, #e24329);
 
-      /* Typography */
-      --font-display: 'Orbitron', sans-serif;
-      --font-heading: 'Exo 2', sans-serif;
-      --font-body: 'Rajdhani', sans-serif;
+      /* Typography - Terminal Aesthetic */
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-heading: 'Inter', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
 
       /* Spacing */
       --space-xs: 4px;
@@ -190,8 +201,8 @@
     }
 
     @keyframes healthPulse {
-      0%, 100% { box-shadow: var(--shadow-md), 0 0 20px rgba(239, 68, 68, 0.3); }
-      50% { box-shadow: var(--shadow-md), 0 0 30px rgba(239, 68, 68, 0.5); }
+      0%, 100% { box-shadow: var(--shadow-md), 0 0 20px rgba(221, 43, 14, 0.3); }
+      50% { box-shadow: var(--shadow-md), 0 0 30px rgba(221, 43, 14, 0.5); }
     }
 
     #health-bar-bg {
@@ -237,6 +248,21 @@
       border-radius: var(--radius-full);
     }
 
+    #health-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.5);
+      white-space: nowrap;
+      z-index: 1;
+      pointer-events: none;
+    }
+
     /* ========================================
        XP BAR - Premium Design
        ======================================== */
@@ -256,7 +282,7 @@
       font-size: 18px;
       font-weight: 700;
       color: var(--gold-400);
-      text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+      text-shadow: 0 0 20px rgba(252, 163, 38, 0.5);
       letter-spacing: 2px;
       text-transform: uppercase;
       display: flex;
@@ -393,7 +419,7 @@
       justify-content: center;
       font-size: 24px;
       position: relative;
-      box-shadow: var(--shadow-md), 0 0 15px rgba(99, 102, 241, 0.2);
+      box-shadow: var(--shadow-md), 0 0 15px rgba(85, 68, 136, 0.2);
       transition: all var(--transition-fast);
     }
 
@@ -418,21 +444,24 @@
     }
 
     /* ========================================
-       VIRTUAL JOYSTICK - Premium Design
+       VIRTUAL JOYSTICK - Dynamic Touch Position
        ======================================== */
     #joystick-zone {
-      position: absolute;
+      position: fixed;
       bottom: 100px;
       left: var(--space-lg);
       width: 150px;
       height: 150px;
-      pointer-events: auto;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease-out;
+      z-index: 200;
     }
 
     #joystick-base {
       position: absolute;
-      width: 130px;
-      height: 130px;
+      width: 100px;
+      height: 100px;
       background: radial-gradient(circle, var(--surface-glass-hover) 0%, var(--surface-glass) 100%);
       border: 3px solid var(--surface-border);
       border-radius: 50%;
@@ -446,8 +475,8 @@
 
     #joystick-stick {
       position: absolute;
-      width: 56px;
-      height: 56px;
+      width: 44px;
+      height: 44px;
       background: var(--gradient-primary);
       border: 3px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
@@ -459,7 +488,7 @@
     }
 
     /* ========================================
-       MENU OVERLAY - Glassmorphism
+       MENU OVERLAY - Deep Space (abeles.dev style)
        ======================================== */
     .menu-overlay {
       position: absolute;
@@ -467,15 +496,15 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(ellipse at center, rgba(15, 15, 26, 0.95) 0%, rgba(10, 10, 15, 0.98) 100%);
+      background: radial-gradient(ellipse at center, rgba(10, 10, 20, 0.85) 0%, rgba(8, 8, 16, 0.92) 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: var(--space-lg);
       z-index: 100;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
 
     .menu-overlay.hidden {
@@ -485,14 +514,14 @@
     .menu-title {
       font-family: var(--font-display);
       font-size: 64px;
-      font-weight: 900;
-      background: var(--gradient-gold);
+      font-weight: 700;
+      background: var(--gradient-gitlab);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       text-shadow: none;
-      filter: drop-shadow(0 4px 8px rgba(251, 191, 36, 0.3));
-      letter-spacing: 4px;
+      filter: drop-shadow(0 4px 8px rgba(252, 109, 38, 0.3));
+      letter-spacing: 3px;
       text-transform: uppercase;
       margin-bottom: var(--space-lg);
       animation: titleFloat 3s ease-in-out infinite;
@@ -534,7 +563,7 @@
 
     .menu-btn:hover {
       transform: translateY(-4px) scale(1.02);
-      box-shadow: var(--shadow-xl), 0 0 40px rgba(99, 102, 241, 0.5);
+      box-shadow: var(--shadow-xl), 0 0 40px rgba(85, 68, 136, 0.5);
     }
 
     .menu-btn:hover::before {
@@ -558,6 +587,138 @@
     }
 
     /* ========================================
+       SETTINGS MENU
+       ======================================== */
+    #settings-menu {
+      z-index: 160;
+      overflow-y: auto;
+      padding: var(--space-lg) 0;
+    }
+
+    #settings-menu .menu-title {
+      flex-shrink: 0;
+    }
+
+    .settings-container {
+      background: var(--surface-glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      margin-bottom: var(--space-lg);
+      min-width: 300px;
+      max-width: 90%;
+      flex-shrink: 0;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--surface-border);
+    }
+
+    .settings-row:last-child {
+      border-bottom: none;
+    }
+
+    .settings-label {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--surface-glass);
+      border: 2px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      min-width: 90px;
+      justify-content: center;
+    }
+
+    .toggle-btn:hover {
+      border-color: var(--surface-border-hover);
+    }
+
+    .toggle-btn.active {
+      background: var(--gradient-primary);
+      border-color: var(--primary-500);
+      color: var(--text-primary);
+    }
+
+    .toggle-btn.danger {
+      border-color: var(--health-low);
+      color: var(--health-low);
+    }
+
+    .toggle-btn.danger:hover {
+      background: var(--gradient-danger);
+      border-color: var(--health-low);
+      color: var(--text-primary);
+    }
+
+    .toggle-btn .toggle-icon {
+      font-size: 16px;
+    }
+
+    .volume-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+
+    .volume-slider {
+      width: 100%;
+      height: 8px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--bg-light);
+      border-radius: var(--radius-full);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--gradient-primary);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: var(--shadow-md), var(--shadow-glow-primary);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .volume-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: var(--gradient-primary);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: var(--shadow-md), var(--shadow-glow-primary);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .volume-slider::-webkit-slider-runnable-track {
+      background: linear-gradient(to right, var(--primary-500) 0%, var(--primary-500) var(--value, 50%), var(--bg-light) var(--value, 50%), var(--bg-light) 100%);
+      border-radius: var(--radius-full);
+    }
+
+    /* ========================================
        LEVEL UP SCREEN - Card-based Design
        ======================================== */
     #levelup-screen {
@@ -567,24 +728,24 @@
     #levelup-title {
       font-family: var(--font-display);
       font-size: 48px;
-      font-weight: 900;
-      background: var(--gradient-gold);
+      font-weight: 700;
+      background: var(--gradient-gitlab);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      filter: drop-shadow(0 0 30px rgba(251, 191, 36, 0.5));
-      letter-spacing: 4px;
+      filter: drop-shadow(0 0 30px rgba(252, 163, 38, 0.5));
+      letter-spacing: 3px;
       animation: levelUpPulse 1s ease-in-out infinite;
     }
 
     @keyframes levelUpPulse {
       0%, 100% {
         transform: scale(1);
-        filter: drop-shadow(0 0 30px rgba(251, 191, 36, 0.5));
+        filter: drop-shadow(0 0 30px rgba(252, 163, 38, 0.5));
       }
       50% {
         transform: scale(1.05);
-        filter: drop-shadow(0 0 50px rgba(251, 191, 36, 0.7));
+        filter: drop-shadow(0 0 50px rgba(252, 163, 38, 0.7));
       }
     }
 
@@ -617,7 +778,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg, transparent 0%, rgba(99, 102, 241, 0.1) 100%);
+      background: linear-gradient(135deg, transparent 0%, rgba(85, 68, 136, 0.12) 100%);
       opacity: 0;
       transition: opacity var(--transition-base);
     }
@@ -668,7 +829,7 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      filter: drop-shadow(0 0 30px rgba(239, 68, 68, 0.5));
+      filter: drop-shadow(0 0 30px rgba(221, 43, 14, 0.5));
       animation: gameOverShake 0.5s ease-in-out;
     }
 
@@ -684,7 +845,7 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      filter: drop-shadow(0 0 30px rgba(16, 185, 129, 0.5));
+      filter: drop-shadow(0 0 30px rgba(16, 133, 72, 0.5));
       animation: victoryBounce 0.6s ease-out;
     }
 
@@ -743,8 +904,60 @@
     .damage-number.crit {
       color: var(--gold-400);
       font-size: 32px;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(251, 191, 36, 0.6);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(252, 163, 38, 0.6);
       animation: critFloat 1s ease-out forwards;
+    }
+
+    .player-damage-number {
+      position: fixed;
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--health-low);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9), 0 0 15px rgba(221, 43, 14, 0.6);
+      pointer-events: none;
+      animation: playerDamageFloat 1s ease-out forwards;
+      z-index: 150;
+    }
+
+    @keyframes playerDamageFloat {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1.3);
+      }
+      15% {
+        transform: translateY(-5px) scale(1.1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.9);
+      }
+    }
+
+    .heal-number {
+      position: fixed;
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--health-high);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9), 0 0 15px rgba(16, 133, 72, 0.6);
+      pointer-events: none;
+      animation: healFloat 1s ease-out forwards;
+      z-index: 150;
+    }
+
+    @keyframes healFloat {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1.3);
+      }
+      15% {
+        transform: translateY(-5px) scale(1.1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.9);
+      }
     }
 
     @keyframes damageFloat {
@@ -772,6 +985,154 @@
       100% {
         opacity: 0;
         transform: translateY(-60px) scale(0.8) rotate(0deg);
+      }
+    }
+
+    /* ========================================
+       ROOM BONUS SELECTION STYLES
+       ======================================== */
+    #bonus-selection-screen {
+      z-index: 155;
+    }
+
+    .bonus-title {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 2px;
+      margin-bottom: var(--space-xs);
+    }
+
+    .bonus-subtitle {
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-xl);
+    }
+
+    .bonus-choices {
+      display: flex;
+      gap: var(--space-lg);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .bonus-card {
+      width: 160px;
+      padding: var(--space-md);
+      background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-medium) 100%);
+      border: 2px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bonus-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 100%);
+      opacity: 0;
+      transition: opacity var(--transition-base);
+    }
+
+    .bonus-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: var(--text-secondary);
+      box-shadow: var(--shadow-lg), 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .bonus-card:hover::before {
+      opacity: 1;
+    }
+
+    .bonus-card-icon {
+      font-size: 40px;
+      margin-bottom: var(--space-sm);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      position: relative;
+      z-index: 1;
+    }
+
+    .bonus-card-name {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+      position: relative;
+      z-index: 1;
+    }
+
+    .bonus-card-desc {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Mobile adjustments for bonus selection */
+    @media (max-width: 768px) {
+      .bonus-title {
+        font-size: 28px;
+      }
+
+      .bonus-subtitle {
+        font-size: 14px;
+      }
+
+      .bonus-card {
+        width: 140px;
+        padding: var(--space-sm) var(--space-md);
+      }
+
+      .bonus-card-icon {
+        font-size: 32px;
+      }
+
+      .bonus-card-name {
+        font-size: 13px;
+      }
+
+      .bonus-card-desc {
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .bonus-title {
+        font-size: 24px;
+      }
+
+      .bonus-choices {
+        gap: var(--space-md);
+      }
+
+      .bonus-card {
+        width: 120px;
+        padding: var(--space-sm);
+      }
+
+      .bonus-card-icon {
+        font-size: 28px;
+        margin-bottom: var(--space-xs);
+      }
+
+      .bonus-card-name {
+        font-size: 12px;
+      }
+
+      .bonus-card-desc {
+        font-size: 10px;
       }
     }
 
@@ -854,8 +1215,8 @@
       }
 
       #health-bar-bg {
-        width: 120px;
-        height: 20px;
+        width: 100px;
+        height: 18px;
       }
 
       #health-icon {
@@ -864,18 +1225,38 @@
         font-size: 18px;
       }
 
+      #health-container {
+        gap: var(--space-sm);
+      }
+
       #xp-bar-bg {
-        width: 220px;
-        height: 12px;
+        width: 160px;
+        height: 10px;
       }
 
       #level-display {
-        font-size: 14px;
+        font-size: 12px;
+        letter-spacing: 1px;
       }
 
       #level-display::before,
       #level-display::after {
-        width: 20px;
+        width: 12px;
+      }
+
+      #stage-info {
+        font-size: 11px;
+        padding: var(--space-xs) var(--space-sm);
+        top: var(--space-md);
+        right: var(--space-md);
+      }
+
+      #pause-btn {
+        top: 56px;
+        right: var(--space-md);
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
       }
 
       .menu-title {
@@ -888,17 +1269,153 @@
         font-size: 16px;
       }
 
+      #levelup-screen {
+        overflow-y: auto;
+        padding: var(--space-lg) 0;
+      }
+
       #levelup-title {
-        font-size: 32px;
+        font-size: 28px;
+        flex-shrink: 0;
+      }
+
+      #ability-choices {
+        flex-direction: column;
+        align-items: center;
+        overflow-y: auto;
+        max-height: 70vh;
+        padding-bottom: var(--space-lg);
       }
 
       .ability-card {
-        width: 160px;
+        width: 85%;
+        max-width: 280px;
         padding: var(--space-md);
+        flex-shrink: 0;
       }
 
       .ability-card-icon {
-        font-size: 40px;
+        font-size: 36px;
+      }
+
+      .ability-card-name {
+        font-size: 16px;
+      }
+
+      .ability-card-desc {
+        font-size: 13px;
+      }
+
+      #gameover-screen .menu-title,
+      #victory-screen .menu-title {
+        font-size: 42px;
+      }
+
+      .stats-container {
+        padding: var(--space-md);
+        min-width: 220px;
+      }
+
+      .stats-container p {
+        font-size: 14px;
+        gap: var(--space-md);
+      }
+
+      #wave-announcement {
+        font-size: 28px;
+      }
+
+      .ability-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+
+      /* Settings menu mobile adjustments */
+      .settings-container {
+        min-width: 280px;
+        padding: var(--space-lg);
+      }
+
+      .settings-label {
+        font-size: 14px;
+      }
+
+      .toggle-btn {
+        min-width: 80px;
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      :root {
+        --space-lg: 12px;
+        --space-xl: 20px;
+      }
+
+      #health-bar-bg {
+        width: 80px;
+        height: 16px;
+      }
+
+      #health-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+
+      #xp-bar-bg {
+        width: 120px;
+        height: 8px;
+      }
+
+      #level-display {
+        font-size: 11px;
+      }
+
+      #level-display::before,
+      #level-display::after {
+        width: 8px;
+      }
+
+      #stage-info {
+        font-size: 10px;
+        padding: 3px 6px;
+      }
+
+      #pause-btn {
+        top: 48px;
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+      }
+
+      .menu-title {
+        font-size: 32px;
+      }
+
+      .menu-btn {
+        padding: var(--space-sm) var(--space-lg);
+        font-size: 14px;
+      }
+
+      #levelup-title {
+        font-size: 24px;
+      }
+
+      #ability-choices {
+        gap: var(--space-sm);
+        max-height: 65vh;
+      }
+
+      .ability-card {
+        width: 90%;
+        padding: var(--space-sm) var(--space-md);
+      }
+
+      .ability-card-icon {
+        font-size: 32px;
+        margin-bottom: var(--space-xs);
       }
 
       .ability-card-name {
@@ -909,66 +1426,231 @@
         font-size: 12px;
       }
 
-      #stage-info {
-        font-size: 12px;
-        padding: var(--space-xs) var(--space-sm);
-      }
-
       #gameover-screen .menu-title,
       #victory-screen .menu-title {
-        font-size: 48px;
+        font-size: 36px;
       }
 
       .stats-container {
-        padding: var(--space-lg);
-        min-width: 240px;
+        min-width: 200px;
+        padding: var(--space-sm) var(--space-md);
       }
 
       .stats-container p {
-        font-size: 16px;
+        font-size: 13px;
       }
 
       #wave-announcement {
-        font-size: 32px;
+        font-size: 24px;
       }
 
-      .ability-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 20px;
+      /* Settings menu for narrow screens */
+      .settings-container {
+        min-width: 240px;
+        padding: var(--space-md);
+      }
+
+      .settings-label {
+        font-size: 13px;
+      }
+
+      .toggle-btn {
+        min-width: 70px;
+        padding: var(--space-xs) var(--space-sm);
       }
     }
 
-    @media (max-width: 480px) {
+    /* Extra small screens (iPhone SE, older devices) */
+    @media (max-width: 360px) {
+      #health-container {
+        top: var(--space-sm);
+        left: var(--space-sm);
+        gap: 4px;
+      }
+
+      #health-bar-bg {
+        width: 60px;
+        height: 14px;
+      }
+
+      #health-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        border-radius: var(--radius-sm);
+      }
+
+      #xp-container {
+        top: var(--space-sm);
+      }
+
+      #xp-bar-bg {
+        width: 90px;
+        height: 6px;
+      }
+
+      #level-display {
+        font-size: 10px;
+        letter-spacing: 0.5px;
+      }
+
+      #level-display::before,
+      #level-display::after {
+        display: none;
+      }
+
+      #stage-info {
+        font-size: 9px;
+        padding: 2px 5px;
+        top: var(--space-sm);
+        right: var(--space-sm);
+      }
+
+      #pause-btn {
+        top: 40px;
+        right: var(--space-sm);
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+      }
+
       .menu-title {
-        font-size: 32px;
+        font-size: 28px;
+        letter-spacing: 1px;
       }
 
-      #ability-choices {
-        gap: var(--space-md);
+      .menu-btn {
+        padding: var(--space-xs) var(--space-md);
+        font-size: 13px;
       }
 
-      .ability-card {
-        width: 140px;
-        padding: var(--space-sm);
-      }
-
-      .ability-card-icon {
-        font-size: 32px;
+      #levelup-title {
+        font-size: 22px;
         margin-bottom: var(--space-sm);
       }
 
+      #ability-choices {
+        max-height: 60vh;
+        gap: var(--space-xs);
+      }
+
+      .ability-card {
+        width: 95%;
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      .ability-card-icon {
+        font-size: 28px;
+        margin-bottom: 4px;
+      }
+
       .ability-card-name {
-        font-size: 12px;
+        font-size: 13px;
       }
 
       .ability-card-desc {
         font-size: 11px;
+        line-height: 1.3;
+      }
+
+      #gameover-screen .menu-title,
+      #victory-screen .menu-title {
+        font-size: 30px;
+      }
+
+      .stats-container {
+        min-width: 180px;
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      .stats-container p {
+        font-size: 12px;
+        margin: 4px 0;
+      }
+
+      #wave-announcement {
+        font-size: 20px;
+        letter-spacing: 2px;
+      }
+
+      .ability-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+      }
+
+      /* Settings menu for extra small screens */
+      .settings-container {
+        min-width: 200px;
+        padding: var(--space-sm);
+      }
+
+      .settings-row {
+        padding: var(--space-sm) 0;
+      }
+
+      .settings-label {
+        font-size: 12px;
+      }
+
+      .toggle-btn {
+        min-width: 65px;
+        font-size: 11px;
+        padding: 4px 8px;
+      }
+
+      .volume-slider::-webkit-slider-thumb {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    /* Landscape mode on mobile - compact settings */
+    @media (max-height: 500px) and (orientation: landscape) {
+      #settings-menu {
+        padding: var(--space-sm) 0;
+      }
+
+      #settings-menu .menu-title {
+        font-size: 24px;
+        margin-bottom: var(--space-sm);
+      }
+
+      .settings-container {
+        padding: var(--space-sm) var(--space-md);
+        margin-bottom: var(--space-sm);
+      }
+
+      .settings-row {
+        padding: var(--space-xs) 0;
+      }
+
+      .settings-label {
+        font-size: 13px;
+      }
+
+      .toggle-btn {
+        min-width: 70px;
+        padding: 4px 8px;
+        font-size: 11px;
+      }
+
+      .volume-row {
+        gap: 4px;
+      }
+
+      .volume-slider {
+        height: 6px;
+      }
+
+      #settings-menu .menu-btn {
+        padding: var(--space-xs) var(--space-lg);
+        font-size: 13px;
       }
     }
 
     /* ========================================
-       DECORATIVE ELEMENTS
+       DECORATIVE ELEMENTS - Subtle color wash
        ======================================== */
     .menu-overlay::before {
       content: '';
@@ -978,13 +1660,12 @@
       right: 0;
       bottom: 0;
       background:
-        radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
-        radial-gradient(circle at 80% 80%, rgba(34, 211, 238, 0.1) 0%, transparent 40%),
-        radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.05) 0%, transparent 50%);
+        radial-gradient(ellipse at 25% 25%, rgba(169, 137, 245, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 75% 75%, rgba(111, 218, 201, 0.04) 0%, transparent 50%);
       pointer-events: none;
     }
 
-    /* Scanline effect for retro-futuristic feel */
+    /* Subtle vignette effect */
     .menu-overlay::after {
       content: '';
       position: absolute;
@@ -992,14 +1673,297 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0, 0, 0, 0.03) 2px,
-        rgba(0, 0, 0, 0.03) 4px
-      );
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(10, 10, 20, 0.5) 100%);
       pointer-events: none;
+    }
+
+    /* ========================================
+       PARTICLE BACKGROUND CANVAS (abeles.dev style)
+       ======================================== */
+    #particle-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: 1;
+      pointer-events: none;
+    }
+
+    /* ========================================
+       SCOREBOARD STYLES
+       ======================================== */
+    .scoreboard-section {
+      width: 100%;
+      max-width: 500px;
+      margin-top: var(--space-lg);
+    }
+
+    .scoreboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-md);
+    }
+
+    .scoreboard-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .scoreboard-stats {
+      display: flex;
+      gap: var(--space-md);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .scoreboard-stats span {
+      color: var(--gold-400);
+    }
+
+    .scoreboard-container {
+      background: var(--surface-glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .scoreboard-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .scoreboard-container::-webkit-scrollbar-track {
+      background: var(--bg-light);
+    }
+
+    .scoreboard-container::-webkit-scrollbar-thumb {
+      background: var(--primary-500);
+      border-radius: var(--radius-full);
+    }
+
+    .scoreboard-empty {
+      padding: var(--space-xl);
+      text-align: center;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 14px;
+    }
+
+    .scoreboard-row {
+      display: grid;
+      grid-template-columns: 40px 1fr 80px 60px;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      align-items: center;
+      border-bottom: 1px solid var(--surface-border);
+      transition: background var(--transition-fast);
+    }
+
+    .scoreboard-row:last-child {
+      border-bottom: none;
+    }
+
+    .scoreboard-row:hover {
+      background: var(--surface-glass-hover);
+    }
+
+    .scoreboard-row.victory {
+      background: linear-gradient(90deg, rgba(16, 133, 72, 0.1), transparent);
+    }
+
+    .scoreboard-row.victory:hover {
+      background: linear-gradient(90deg, rgba(16, 133, 72, 0.15), var(--surface-glass-hover));
+    }
+
+    .scoreboard-rank {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .scoreboard-rank.top-1 { color: var(--gold-400); }
+    .scoreboard-rank.top-2 { color: #c0c0c0; }
+    .scoreboard-rank.top-3 { color: #cd7f32; }
+
+    .scoreboard-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .scoreboard-info-main {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .scoreboard-victory-badge {
+      font-size: 12px;
+    }
+
+    .scoreboard-info-sub {
+      display: flex;
+      gap: var(--space-md);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .scoreboard-info-sub span {
+      white-space: nowrap;
+    }
+
+    .scoreboard-score {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gold-400);
+      text-align: right;
+    }
+
+    .scoreboard-date {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* New score indicator on game over/victory */
+    .stats-score-row {
+      margin-top: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--surface-border);
+    }
+
+    .stats-score-row span {
+      font-size: 24px;
+      color: var(--gold-400);
+      text-shadow: 0 0 20px rgba(252, 163, 38, 0.5);
+    }
+
+    /* Confirmation dialog */
+    .confirm-content {
+      background: var(--surface-glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .confirm-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--health-low);
+      margin-bottom: var(--space-md);
+    }
+
+    .confirm-message {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xl);
+      line-height: 1.5;
+    }
+
+    .confirm-buttons {
+      display: flex;
+      gap: var(--space-md);
+      justify-content: center;
+    }
+
+    .menu-btn.danger-btn {
+      background: var(--gradient-danger);
+      box-shadow: var(--shadow-lg), 0 0 20px rgba(221, 43, 14, 0.3);
+    }
+
+    .menu-btn.danger-btn:hover {
+      box-shadow: var(--shadow-xl), 0 0 40px rgba(221, 43, 14, 0.5);
+    }
+
+    /* Mobile adjustments for scoreboard */
+    @media (max-width: 768px) {
+      .scoreboard-section {
+        max-width: 90%;
+        margin-top: var(--space-md);
+      }
+
+      .scoreboard-container {
+        max-height: 200px;
+      }
+
+      .scoreboard-row {
+        grid-template-columns: 30px 1fr 70px 50px;
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      .scoreboard-rank {
+        font-size: 12px;
+      }
+
+      .scoreboard-info-main {
+        font-size: 12px;
+      }
+
+      .scoreboard-info-sub {
+        font-size: 10px;
+        gap: var(--space-sm);
+      }
+
+      .scoreboard-score {
+        font-size: 14px;
+      }
+
+      .scoreboard-date {
+        font-size: 10px;
+      }
+
+      .scoreboard-title {
+        font-size: 14px;
+      }
+
+      .scoreboard-stats {
+        font-size: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .scoreboard-container {
+        max-height: 160px;
+      }
+
+      .scoreboard-row {
+        grid-template-columns: 24px 1fr 60px;
+      }
+
+      .scoreboard-date {
+        display: none;
+      }
+
+      .scoreboard-info-sub {
+        gap: var(--space-xs);
+      }
     }
 
     /* ========================================
@@ -1017,10 +1981,11 @@
       border: 0;
     }
   </style>
-  <script type="module" crossorigin src="/clonhero/assets/index-C4VQThtq.js"></script>
+  <script type="module" crossorigin src="/clonhero/assets/index-CRGs8VBF.js"></script>
 </head>
 <body>
   <div id="game-container">
+    <canvas id="particle-bg"></canvas>
     <canvas id="game-canvas"></canvas>
 
     <div id="ui-overlay">
@@ -1029,6 +1994,7 @@
         <span id="health-icon">&#10084;</span>
         <div id="health-bar-bg">
           <div id="health-bar"></div>
+          <span id="health-text">100 / 100</span>
         </div>
       </div>
 
@@ -1064,13 +2030,66 @@
     <div id="start-menu" class="menu-overlay">
       <h1 class="menu-title">CLONHERO</h1>
       <button id="start-btn" class="menu-btn">Play Game</button>
+      <button id="settings-btn" class="menu-btn secondary">Settings</button>
+
+      <!-- Scoreboard Section -->
+      <div id="scoreboard-section" class="scoreboard-section">
+        <div class="scoreboard-header">
+          <span class="scoreboard-title">Recent Runs</span>
+          <div class="scoreboard-stats">
+            <span id="scoreboard-total">0</span> runs
+            <span id="scoreboard-wins">0</span> wins
+          </div>
+        </div>
+        <div id="scoreboard-container" class="scoreboard-container">
+          <div class="scoreboard-empty">No runs yet. Play a game!</div>
+        </div>
+      </div>
     </div>
 
     <!-- Pause Menu -->
     <div id="pause-menu" class="menu-overlay hidden">
       <h1 class="menu-title">Paused</h1>
       <button id="resume-btn" class="menu-btn">Resume</button>
+      <button id="pause-settings-btn" class="menu-btn secondary">Settings</button>
       <button id="quit-btn" class="menu-btn secondary">Quit to Menu</button>
+    </div>
+
+    <!-- Settings Menu -->
+    <div id="settings-menu" class="menu-overlay hidden">
+      <h1 class="menu-title">Settings</h1>
+      <div class="settings-container">
+        <div class="settings-row">
+          <span class="settings-label">Music</span>
+          <button id="music-toggle" class="toggle-btn active">
+            <span class="toggle-icon">🔊</span>
+            <span class="toggle-text">ON</span>
+          </button>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Sound Effects</span>
+          <button id="sfx-toggle" class="toggle-btn active">
+            <span class="toggle-icon">🔊</span>
+            <span class="toggle-text">ON</span>
+          </button>
+        </div>
+        <div class="settings-row volume-row">
+          <span class="settings-label">Music Volume</span>
+          <input type="range" id="music-volume" class="volume-slider" min="0" max="100" value="30">
+        </div>
+        <div class="settings-row volume-row">
+          <span class="settings-label">SFX Volume</span>
+          <input type="range" id="sfx-volume" class="volume-slider" min="0" max="100" value="50">
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Scoreboard</span>
+          <button id="clear-scoreboard-btn" class="toggle-btn danger">
+            <span class="toggle-icon">&#128465;</span>
+            <span class="toggle-text">Clear</span>
+          </button>
+        </div>
+      </div>
+      <button id="settings-back-btn" class="menu-btn">Back</button>
     </div>
 
     <!-- Level Up Screen -->
@@ -1086,6 +2105,7 @@
         <p>Level Reached <span id="go-level">1</span></p>
         <p>Enemies Defeated <span id="go-kills">0</span></p>
         <p>Time Survived <span id="go-time">0:00</span></p>
+        <p class="stats-score-row">Score <span id="go-score">0</span></p>
       </div>
       <button id="restart-btn" class="menu-btn">Try Again</button>
     </div>
@@ -1097,10 +2117,157 @@
         <p>Final Level <span id="vic-level">1</span></p>
         <p>Total Enemies <span id="vic-kills">0</span></p>
         <p>Completion Time <span id="vic-time">0:00</span></p>
+        <p class="stats-score-row">Score <span id="vic-score">0</span></p>
       </div>
       <button id="victory-restart-btn" class="menu-btn">Play Again</button>
     </div>
   </div>
 
+
+  <!-- Particle Background Animation (abeles.dev style) -->
+  <script>
+    (function() {
+      const canvas = document.getElementById('particle-bg');
+      const ctx = canvas.getContext('2d');
+
+      // Configuration (matching abeles.dev)
+      const PARTICLE_COUNT = 60;
+      const CONNECTION_DISTANCE = 180;
+      const MOUSE_RADIUS = 100;
+      const DAMPING = 0.99;
+
+      // Colors from abeles.dev
+      const colors = [
+        { r: 169, g: 137, b: 245 }, // purple-200
+        { r: 111, g: 218, b: 201 }, // teal-200
+        { r: 119, g: 89, b: 194 },  // purple-300
+        { r: 16, g: 177, b: 177 }   // teal-300
+      ];
+
+      let particles = [];
+      let mouse = { x: null, y: null };
+      let animationId = null;
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      function createParticle() {
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        return {
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          size: Math.random() * 2.5 + 1.5,
+          opacity: Math.random() * 0.4 + 0.5,
+          color: color
+        };
+      }
+
+      function init() {
+        resize();
+        particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          particles.push(createParticle());
+        }
+      }
+
+      function update() {
+        particles.forEach(p => {
+          // Apply velocity
+          p.x += p.vx;
+          p.y += p.vy;
+
+          // Apply damping
+          p.vx *= DAMPING;
+          p.vy *= DAMPING;
+
+          // Bounce off edges
+          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+          // Keep in bounds
+          p.x = Math.max(0, Math.min(canvas.width, p.x));
+          p.y = Math.max(0, Math.min(canvas.height, p.y));
+
+          // Mouse repulsion
+          if (mouse.x !== null && mouse.y !== null) {
+            const dx = p.x - mouse.x;
+            const dy = p.y - mouse.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < MOUSE_RADIUS && dist > 0) {
+              const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS * 0.02;
+              p.vx += (dx / dist) * force;
+              p.vy += (dy / dist) * force;
+            }
+          }
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw connections
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const p1 = particles[i];
+            const p2 = particles[j];
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < CONNECTION_DISTANCE) {
+              const opacity = (1 - dist / CONNECTION_DISTANCE) * 0.15;
+              const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+              gradient.addColorStop(0, `rgba(${p1.color.r}, ${p1.color.g}, ${p1.color.b}, ${opacity})`);
+              gradient.addColorStop(1, `rgba(${p2.color.r}, ${p2.color.g}, ${p2.color.b}, ${opacity})`);
+
+              ctx.beginPath();
+              ctx.strokeStyle = gradient;
+              ctx.lineWidth = 1;
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Draw particles
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${p.opacity})`;
+          ctx.fill();
+        });
+      }
+
+      function animate() {
+        update();
+        draw();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Event listeners
+      window.addEventListener('resize', () => {
+        resize();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+
+      window.addEventListener('mouseleave', () => {
+        mouse.x = null;
+        mouse.y = null;
+      });
+
+      // Start animation
+      init();
+      animate();
+    })();
+  </script>
 </body>
 </html>

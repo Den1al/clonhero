@@ -1,4 +1,5 @@
 import { Audio } from '../core/Audio.js';
+import { scoreboardManager } from '../utils/ScoreboardManager.js';
 
 export class UI {
   constructor() {
@@ -33,15 +34,23 @@ export class UI {
       sfxToggle: document.getElementById('sfx-toggle'),
       musicVolume: document.getElementById('music-volume'),
       sfxVolume: document.getElementById('sfx-volume'),
+      clearScoreboardBtn: document.getElementById('clear-scoreboard-btn'),
 
       abilityChoices: document.getElementById('ability-choices'),
 
       goLevel: document.getElementById('go-level'),
       goKills: document.getElementById('go-kills'),
       goTime: document.getElementById('go-time'),
+      goScore: document.getElementById('go-score'),
       vicLevel: document.getElementById('vic-level'),
       vicKills: document.getElementById('vic-kills'),
-      vicTime: document.getElementById('vic-time')
+      vicTime: document.getElementById('vic-time'),
+      vicScore: document.getElementById('vic-score'),
+
+      // Scoreboard elements
+      scoreboardContainer: document.getElementById('scoreboard-container'),
+      scoreboardTotal: document.getElementById('scoreboard-total'),
+      scoreboardWins: document.getElementById('scoreboard-wins')
     };
 
     this.damageNumbers = [];
@@ -54,6 +63,7 @@ export class UI {
 
     this.setupEventListeners();
     this.initializeSettingsUI();
+    this.refreshScoreboard();
   }
 
   createScreenFadeOverlay() {
@@ -136,6 +146,11 @@ export class UI {
       const volume = e.target.value / 100;
       Audio.setSoundVolume(volume);
       this.updateSliderTrack(e.target);
+    });
+
+    // Clear scoreboard button
+    this.elements.clearScoreboardBtn.addEventListener('click', () => {
+      this.showClearScoreboardConfirm();
     });
   }
 
@@ -260,6 +275,7 @@ export class UI {
   showStartMenu() {
     this.hideAllMenus();
     this.elements.startMenu.classList.remove('hidden');
+    this.refreshScoreboard();
   }
 
   showPauseMenu() {
@@ -302,6 +318,7 @@ export class UI {
     this.elements.goLevel.textContent = stats.level;
     this.elements.goKills.textContent = stats.kills;
     this.elements.goTime.textContent = this.formatTime(stats.time);
+    this.elements.goScore.textContent = stats.score ? stats.score.toLocaleString() : '0';
   }
 
   showVictory(stats) {
@@ -311,6 +328,7 @@ export class UI {
     this.elements.vicLevel.textContent = stats.level;
     this.elements.vicKills.textContent = stats.kills;
     this.elements.vicTime.textContent = this.formatTime(stats.time);
+    this.elements.vicScore.textContent = stats.score ? stats.score.toLocaleString() : '0';
   }
 
   hideAllMenus() {
@@ -599,5 +617,95 @@ export class UI {
     };
 
     this.fadeAnimationId = requestAnimationFrame(animate);
+  }
+
+  /**
+   * Show confirmation dialog for clearing the scoreboard
+   */
+  showClearScoreboardConfirm() {
+    // Create confirmation dialog
+    let confirmDialog = document.getElementById('confirm-dialog');
+    if (!confirmDialog) {
+      confirmDialog = document.createElement('div');
+      confirmDialog.id = 'confirm-dialog';
+      confirmDialog.className = 'menu-overlay';
+      confirmDialog.style.zIndex = '200';
+      document.getElementById('game-container').appendChild(confirmDialog);
+    }
+
+    confirmDialog.classList.remove('hidden');
+    confirmDialog.innerHTML = `
+      <div class="confirm-content">
+        <h2 class="confirm-title">Clear Scoreboard?</h2>
+        <p class="confirm-message">This will permanently delete all your run history. This cannot be undone.</p>
+        <div class="confirm-buttons">
+          <button id="confirm-cancel" class="menu-btn secondary">Cancel</button>
+          <button id="confirm-clear" class="menu-btn danger-btn">Clear All</button>
+        </div>
+      </div>
+    `;
+
+    // Add event listeners
+    document.getElementById('confirm-cancel').addEventListener('click', () => {
+      confirmDialog.classList.add('hidden');
+    });
+
+    document.getElementById('confirm-clear').addEventListener('click', () => {
+      scoreboardManager.clearAll();
+      this.refreshScoreboard();
+      confirmDialog.classList.add('hidden');
+    });
+  }
+
+  /**
+   * Refresh the scoreboard display on the main menu
+   */
+  refreshScoreboard() {
+    const runs = scoreboardManager.getRunsByScore();
+    const totalRuns = scoreboardManager.getTotalRuns();
+    const victories = scoreboardManager.getVictoryCount();
+
+    // Update stats
+    this.elements.scoreboardTotal.textContent = totalRuns;
+    this.elements.scoreboardWins.textContent = victories;
+
+    // Update scoreboard container
+    if (runs.length === 0) {
+      this.elements.scoreboardContainer.innerHTML = `
+        <div class="scoreboard-empty">No runs yet. Play a game!</div>
+      `;
+      return;
+    }
+
+    // Show top 10 runs
+    const topRuns = runs.slice(0, 10);
+    let html = '';
+
+    topRuns.forEach((run, index) => {
+      const rankClass = index < 3 ? `top-${index + 1}` : '';
+      const victoryClass = run.victory ? 'victory' : '';
+      const victoryBadge = run.victory ? '<span class="scoreboard-victory-badge">&#9733;</span>' : '';
+      const stageName = scoreboardManager.getStageName(run.stage);
+
+      html += `
+        <div class="scoreboard-row ${victoryClass}">
+          <div class="scoreboard-rank ${rankClass}">#${index + 1}</div>
+          <div class="scoreboard-info">
+            <div class="scoreboard-info-main">
+              Lvl ${run.level} ${victoryBadge}
+            </div>
+            <div class="scoreboard-info-sub">
+              <span>${run.kills} kills</span>
+              <span>${scoreboardManager.formatTime(run.time)}</span>
+              <span>${stageName}</span>
+            </div>
+          </div>
+          <div class="scoreboard-score">${run.score.toLocaleString()}</div>
+          <div class="scoreboard-date">${scoreboardManager.formatDate(run.date)}</div>
+        </div>
+      `;
+    });
+
+    this.elements.scoreboardContainer.innerHTML = html;
   }
 }
