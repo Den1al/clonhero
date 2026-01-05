@@ -7,6 +7,7 @@ import { Enemy, EnemyTypes } from '../entities/Enemy.js';
 import { StatusEffectTypes } from '../systems/StatusEffectSystem.js';
 import { ProjectileSystem } from '../entities/Projectile.js';
 import { XPGemSystem } from '../entities/XPGem.js';
+import { HealthPotionSystem } from '../entities/HealthPotion.js';
 import { ParticleSystem } from '../entities/Particle.js';
 import { Arena } from '../entities/Arena.js';
 import { RoomGate } from '../entities/RoomGate.js';
@@ -23,7 +24,8 @@ export const GameState = {
   LEVELUP: 'levelup',
   GAMEOVER: 'gameover',
   VICTORY: 'victory',
-  ROOM_TRANSITION: 'room_transition'
+  ROOM_TRANSITION: 'room_transition',
+  REWARD_WHEEL: 'reward_wheel'
 };
 
 export class Game {
@@ -57,6 +59,7 @@ export class Game {
     this.player = new Player(this.scene.scene);
     this.projectileSystem = new ProjectileSystem(this.scene.scene);
     this.xpGemSystem = new XPGemSystem(this.scene.scene);
+    this.healthPotionSystem = new HealthPotionSystem(this.scene.scene);
     this.particleSystem = new ParticleSystem(this.scene.scene);
     this.collisionSystem = new CollisionSystem();
     this.abilitySystem = new AbilitySystem();
@@ -75,6 +78,23 @@ export class Game {
     this.gateTransitioning = false;
     this.gateTransitionProgress = 0;
     this.playerEnteredGate = false;
+
+    // Reward wheel state
+    this.pendingWheelReward = false;
+
+    // Minor bonus rewards (one will be offered alongside health)
+    this.bonusRewards = [
+      { id: 'max_hp', name: 'Max HP Up', description: '+10 Max HP', icon: '💖' },
+      { id: 'speed', name: 'Speed Boost', description: '+8% Speed', icon: '⚡' },
+      { id: 'attack', name: 'Attack Up', description: '+5% Damage', icon: '⚔️' },
+      { id: 'attack_speed', name: 'Faster Attack', description: '+8% Attack Speed', icon: '🏹' },
+      { id: 'crit', name: 'Critical Eye', description: '+3% Crit', icon: '🎯' },
+      { id: 'regen', name: 'Regeneration', description: '+0.5 HP/sec', icon: '💚' },
+      { id: 'magnet', name: 'Magnetism', description: '+15% XP Range', icon: '🧲' }
+    ];
+
+    // Health option always offered
+    this.healthBonus = { id: 'heal', name: 'Health Restore', description: '+25 HP', icon: '❤️' };
 
     this.lastTime = 0;
     this.deltaTime = 0;
@@ -110,6 +130,7 @@ export class Game {
     this.player.reset();
     this.projectileSystem.clear();
     this.xpGemSystem.clear();
+    this.healthPotionSystem.clear();
     this.particleSystem.clear();
     this.abilitySystem.reset();
     this.waveSystem.reset();
@@ -140,6 +161,7 @@ export class Game {
     this.enemies = [];
     this.projectileSystem.clear();
     this.xpGemSystem.clear();
+    this.healthPotionSystem.clear();
     this.particleSystem.clear();
 
     // Reset transition timer and gate state
@@ -238,6 +260,63 @@ export class Game {
     this.input.setTouchControlsEnabled(true); // Re-enable touch controls after ability selection
   }
 
+  showRoomBonus() {
+    this.state = GameState.REWARD_WHEEL;
+    this.input.setTouchControlsEnabled(false);
+
+    // Pick one random bonus reward
+    const randomIndex = Math.floor(Math.random() * this.bonusRewards.length);
+    const randomBonus = this.bonusRewards[randomIndex];
+
+    // Always offer health + one random bonus
+    const options = [this.healthBonus, randomBonus];
+
+    this.ui.showBonusSelection(options, (bonus) => {
+      this.applyBonus(bonus);
+    });
+  }
+
+  applyBonus(bonus) {
+    switch (bonus.id) {
+      case 'heal':
+        this.player.heal(25);
+        this.ui.updateHealth(this.player.health, this.player.maxHealth);
+        break;
+      case 'max_hp':
+        this.player.maxHealth += 10;
+        this.player.health += 10;
+        this.ui.updateHealth(this.player.health, this.player.maxHealth);
+        break;
+      case 'speed':
+        this.player.speed *= 1.08;
+        break;
+      case 'attack':
+        this.player.attackDamage *= 1.05;
+        break;
+      case 'attack_speed':
+        this.player.attackSpeed *= 1.08;
+        break;
+      case 'crit':
+        this.player.critChance += 0.03;
+        break;
+      case 'regen':
+        this.player.hpRegen = (this.player.hpRegen || 0) + 0.5;
+        break;
+      case 'magnet':
+        this.player.xpMagnetRange *= 1.15;
+        break;
+    }
+
+    Audio.play('abilitySelect');
+    this.pendingWheelReward = false;
+
+    // Start the new room after bonus selection
+    this.startRoom();
+
+    this.state = GameState.PLAYING;
+    this.input.setTouchControlsEnabled(true);
+  }
+
   gameOver() {
     this.state = GameState.GAMEOVER;
     Audio.stopMusic();
@@ -326,6 +405,33 @@ export class Game {
         this.showLevelUp();
         return; // Skip the rest of the update while in level up screen
       }
+    }
+
+    // Update health potions and check for pickup
+    const healAmount = this.healthPotionSystem.update(
+      delta,
+      this.player.mesh.position
+    );
+
+    if (healAmount > 0) {
+      this.player.heal(healAmount);
+      Audio.play('xpPickup'); // Reuse pickup sound
+      this.ui.updateHealth(this.player.health, this.player.maxHealth);
+
+      // Show heal number
+      const screenPos = this.scene.worldToScreen(this.player.mesh.position);
+      this.ui.showHealNumber(healAmount, screenPos.x, screenPos.y);
+
+      // Emit healing particles
+      this.particleSystem.emitBurst(this.player.mesh.position, 10, {
+        color: 0xff4444,
+        speed: 2,
+        lifetime: 0.6,
+        startScale: 0.15,
+        endScale: 0,
+        gravity: -3,
+        elevation: 0.5
+      });
     }
 
     this.handleCollisions();
@@ -581,9 +687,17 @@ export class Game {
           this.ui.setScreenFade(0);
           this.victory();
         } else {
-          this.startRoom();
-          // Fade back in after room loads
-          this.ui.fadeScreenIn(0.5);
+          // Mark that we need to show the wheel after fade
+          this.pendingWheelReward = true;
+          // Fade back in and then show wheel
+          this.ui.fadeScreenIn(0.3);
+
+          // Delay showing bonus selection until fade completes
+          setTimeout(() => {
+            if (this.pendingWheelReward && this.state !== GameState.GAMEOVER) {
+              this.showRoomBonus();
+            }
+          }, 350);
         }
       }
       return;
@@ -664,6 +778,9 @@ export class Game {
     this.particleSystem.emitDeath(enemy.mesh.position, color);
 
     this.xpGemSystem.spawnMultiple(enemy.mesh.position, enemy.xpValue || 10);
+
+    // Check for health potion drop (every 10-15 kills)
+    this.healthPotionSystem.onEnemyKilled(enemy.mesh.position);
   }
 
   animate(time) {

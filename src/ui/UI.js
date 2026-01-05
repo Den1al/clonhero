@@ -354,6 +354,24 @@ export class UI {
     }, 1000);
   }
 
+  showHealNumber(amount, screenX, screenY) {
+    const element = document.createElement('div');
+    element.className = 'heal-number';
+    element.textContent = `+${Math.round(amount)}`;
+
+    // Position near the player with some random offset
+    const offsetX = Math.random() * 30 - 15;
+    const offsetY = Math.random() * 20 - 10;
+    element.style.left = `${screenX + offsetX}px`;
+    element.style.top = `${screenY + offsetY}px`;
+
+    document.getElementById('ui-overlay').appendChild(element);
+
+    setTimeout(() => {
+      element.remove();
+    }, 1000);
+  }
+
   showXPCollected(amount) {
     const element = document.createElement('div');
     element.className = 'xp-collected';
@@ -463,6 +481,53 @@ export class UI {
     document.head.appendChild(style);
 
     document.body.appendChild(indicator);
+  }
+
+  showBonusSelection(options, onSelect) {
+    this.hideAllMenus();
+
+    // Create or get the bonus screen
+    let bonusScreen = document.getElementById('bonus-selection-screen');
+    if (!bonusScreen) {
+      bonusScreen = document.createElement('div');
+      bonusScreen.id = 'bonus-selection-screen';
+      bonusScreen.className = 'menu-overlay';
+      document.getElementById('game-container').appendChild(bonusScreen);
+    }
+
+    bonusScreen.classList.remove('hidden');
+    bonusScreen.innerHTML = `
+      <h1 class="bonus-title">Room Bonus</h1>
+      <p class="bonus-subtitle">Choose a small reward</p>
+      <div class="bonus-choices" id="bonus-choices"></div>
+    `;
+
+    const choicesContainer = document.getElementById('bonus-choices');
+
+    // Create option cards (similar to ability cards but smaller/simpler)
+    options.forEach((option) => {
+      const card = document.createElement('div');
+      card.className = 'bonus-card';
+      card.innerHTML = `
+        <div class="bonus-card-icon">${option.icon}</div>
+        <div class="bonus-card-name">${option.name}</div>
+        <div class="bonus-card-desc">${option.description}</div>
+      `;
+
+      card.addEventListener('click', () => {
+        bonusScreen.classList.add('hidden');
+        onSelect(option);
+      });
+
+      choicesContainer.appendChild(card);
+    });
+  }
+
+  hideBonusSelection() {
+    const bonusScreen = document.getElementById('bonus-selection-screen');
+    if (bonusScreen) {
+      bonusScreen.classList.add('hidden');
+    }
   }
 
   /**

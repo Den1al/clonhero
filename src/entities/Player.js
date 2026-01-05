@@ -25,6 +25,10 @@ export class Player {
     this.xpMagnetRange = 2;
     this.xpMultiplier = 1;
 
+    // HP Regeneration
+    this.hpRegen = 0; // HP per second
+    this.regenAccumulator = 0;
+
     this.velocity = new THREE.Vector3();
     this.targetRotation = 0;
     this.attackTimer = 0;
@@ -234,6 +238,16 @@ export class Player {
       }
     }
 
+    // HP Regeneration
+    if (this.hpRegen > 0 && this.health < this.maxHealth) {
+      this.regenAccumulator += this.hpRegen * delta;
+      if (this.regenAccumulator >= 1) {
+        const healAmount = Math.floor(this.regenAccumulator);
+        this.heal(healAmount);
+        this.regenAccumulator -= healAmount;
+      }
+    }
+
     this.updateHealthBar();
   }
 
@@ -410,7 +424,21 @@ export class Player {
   }
 
   reset() {
+    // Reset base stats
+    this.maxHealth = 100;
     this.health = this.maxHealth;
+    this.speed = 5;
+    this.attackSpeed = 1.5;
+    this.attackDamage = 10;
+    this.attackRange = 15;
+    this.projectileSpeed = 12;
+    this.critChance = 0.05;
+    this.critMultiplier = 2;
+    this.dodge = 0;
+    this.knockbackResistance = 0;
+    this.xpMagnetRange = 2;
+    this.xpMultiplier = 1;
+
     this.xp = 0;
     this.level = 1;
     this.xpToNextLevel = 100;
@@ -430,6 +458,10 @@ export class Player {
     this.ricochet = false;
     this.homing = false;
     this.shield = 0;
+
+    // Reset HP regen
+    this.hpRegen = 0;
+    this.regenAccumulator = 0;
 
     // Reset elemental abilities
     this.fireArrows = false;
