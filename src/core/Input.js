@@ -8,6 +8,7 @@ export class Input {
     this.isMobile = this.detectMobile();
     this.touchId = null;
     this.maxJoystickDistance = 50; // Max distance stick can move from center
+    this.touchControlsEnabled = false; // Only enable during gameplay
 
     this.setupKeyboardListeners();
     this.setupTouchListeners();
@@ -17,6 +18,18 @@ export class Input {
       this.hideJoystick();
     } else {
       document.getElementById('joystick-zone').style.display = 'none';
+    }
+  }
+
+  // Enable/disable touch controls (called by Game when state changes)
+  setTouchControlsEnabled(enabled) {
+    this.touchControlsEnabled = enabled;
+    if (!enabled) {
+      // Reset joystick state when disabled
+      this.touchId = null;
+      this.joystickActive = false;
+      this.joystickPosition = { x: 0, y: 0 };
+      this.hideJoystick();
     }
   }
 
@@ -48,33 +61,43 @@ export class Input {
     const joystickBase = document.getElementById('joystick-base');
 
     const handleTouchStart = (e) => {
-      // Only respond to touches on the left half of the screen (for movement)
-      // and ignore if we already have an active touch
+      // Don't intercept touches when touch controls are disabled (menus, etc.)
+      if (!this.touchControlsEnabled) return;
+
+      // Don't intercept touches on interactive UI elements (buttons, menus, etc.)
+      const target = e.target;
+      if (target.closest('.menu-overlay') ||
+          target.closest('button') ||
+          target.closest('.ability-card') ||
+          target.closest('#levelup-screen') ||
+          target.closest('#settings-menu')) {
+        return;
+      }
+
+      // Ignore if we already have an active touch
       if (this.touchId !== null) return;
 
       for (const touch of e.changedTouches) {
         const touchX = touch.clientX;
         const touchY = touch.clientY;
 
-        // Only activate on left half of screen
-        if (touchX < window.innerWidth * 0.6) {
-          e.preventDefault();
-          this.touchId = touch.identifier;
-          this.joystickActive = true;
+        // Activate joystick anywhere on screen (buttons are already excluded above)
+        e.preventDefault();
+        this.touchId = touch.identifier;
+        this.joystickActive = true;
 
-          // Store the origin point where the user touched
-          this.joystickOrigin.x = touchX;
-          this.joystickOrigin.y = touchY;
+        // Store the origin point where the user touched
+        this.joystickOrigin.x = touchX;
+        this.joystickOrigin.y = touchY;
 
-          // Position the joystick zone at the touch location
-          this.showJoystickAt(touchX, touchY);
-          break;
-        }
+        // Position the joystick zone at the touch location
+        this.showJoystickAt(touchX, touchY);
+        break;
       }
     };
 
     const handleTouchMove = (e) => {
-      if (this.touchId === null) return;
+      if (!this.touchControlsEnabled || this.touchId === null) return;
 
       for (const touch of e.changedTouches) {
         if (this.touchId === touch.identifier) {
@@ -136,6 +159,7 @@ export class Input {
     const baseSize = parseInt(getComputedStyle(joystickBase).width) || 100;
 
     // Position joystick zone centered at touch point
+    joystickZone.style.display = 'block'; // Ensure visible (may have been hidden on desktop)
     joystickZone.style.position = 'fixed';
     joystickZone.style.left = `${x - baseSize / 2}px`;
     joystickZone.style.top = `${y - baseSize / 2}px`;

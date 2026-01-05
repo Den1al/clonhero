@@ -101,6 +101,7 @@ export class Game {
     this.resetGame();
     this.state = GameState.PLAYING;
     this.ui.hideAllMenus();
+    this.input.setTouchControlsEnabled(true); // Enable touch controls when game starts
 
     this.startRoom();
   }
@@ -183,6 +184,7 @@ export class Game {
       this.state = GameState.PAUSED;
       this.ui.showPauseMenu();
       Audio.pauseMusic();
+      this.input.setTouchControlsEnabled(false); // Disable touch controls when paused
     }
   }
 
@@ -191,6 +193,7 @@ export class Game {
       this.state = GameState.PLAYING;
       this.ui.hideAllMenus();
       Audio.resumeMusic();
+      this.input.setTouchControlsEnabled(true); // Re-enable touch controls when resumed
     }
   }
 
@@ -198,6 +201,7 @@ export class Game {
     this.state = GameState.MENU;
     this.ui.showStartMenu();
     Audio.stopMusic();
+    this.input.setTouchControlsEnabled(false); // Disable touch controls when back to menu
   }
 
   restartGame() {
@@ -206,6 +210,7 @@ export class Game {
 
   showLevelUp() {
     this.state = GameState.LEVELUP;
+    this.input.setTouchControlsEnabled(false); // Disable touch controls during level up
 
     const abilities = this.abilitySystem.getRandomAbilities(3, this.player);
 
@@ -230,11 +235,13 @@ export class Game {
     this.ui.updateXP(this.player.xp, this.player.xpToNextLevel);
 
     this.state = GameState.PLAYING;
+    this.input.setTouchControlsEnabled(true); // Re-enable touch controls after ability selection
   }
 
   gameOver() {
     this.state = GameState.GAMEOVER;
     Audio.stopMusic();
+    this.input.setTouchControlsEnabled(false); // Disable touch controls on game over
 
     this.ui.showGameOver({
       level: this.player.level,
@@ -246,6 +253,7 @@ export class Game {
   victory() {
     this.state = GameState.VICTORY;
     Audio.stopMusic();
+    this.input.setTouchControlsEnabled(false); // Disable touch controls on victory
 
     this.ui.showVictory({
       level: this.player.level,
@@ -380,12 +388,16 @@ export class Game {
 
     for (const collision of playerEnemyCollisions) {
       const dir = MathUtils.normalize(collision.direction.x, collision.direction.z);
-      const damaged = this.player.takeDamage(collision.enemy.damage, { x: dir.x, z: dir.y });
+      const damage = collision.enemy.damage;
+      const damaged = this.player.takeDamage(damage, { x: dir.x, z: dir.y });
 
       if (damaged) {
         Audio.play('playerHit');
         this.scene.shake(0.3, 0.2);
         this.particleSystem.emitHit(this.player.mesh.position, 0xe74c3c);
+        const screenPos = this.scene.worldToScreen(this.player.mesh.position);
+        this.ui.showPlayerDamage(damage, screenPos.x, screenPos.y);
+        this.ui.updateHealth(this.player.health, this.player.maxHealth);
       }
     }
 
@@ -496,13 +508,17 @@ export class Game {
         knockbackDir.z /= len;
       }
 
-      const damaged = this.player.takeDamage(projectile.damage, knockbackDir);
+      const damage = projectile.damage;
+      const damaged = this.player.takeDamage(damage, knockbackDir);
       projectile.deactivate();
 
       if (damaged) {
         Audio.play('playerHit');
         this.scene.shake(0.3, 0.2);
         this.particleSystem.emitHit(position, 0xe74c3c);
+        const screenPos = this.scene.worldToScreen(this.player.mesh.position);
+        this.ui.showPlayerDamage(damage, screenPos.x, screenPos.y);
+        this.ui.updateHealth(this.player.health, this.player.maxHealth);
       }
     }
   }
@@ -519,8 +535,13 @@ export class Game {
     this.scene.shake(0.5, 0.3);
 
     if (result.hitPlayer) {
-      this.player.takeDamage(explosion.damage);
-      Audio.play('playerHit');
+      const damaged = this.player.takeDamage(explosion.damage);
+      if (damaged) {
+        Audio.play('playerHit');
+        const screenPos = this.scene.worldToScreen(this.player.mesh.position);
+        this.ui.showPlayerDamage(explosion.damage, screenPos.x, screenPos.y);
+        this.ui.updateHealth(this.player.health, this.player.maxHealth);
+      }
     }
 
     for (const enemy of result.hitEnemies) {

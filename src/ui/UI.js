@@ -4,6 +4,7 @@ export class UI {
   constructor() {
     this.elements = {
       healthBar: document.getElementById('health-bar'),
+      healthText: document.getElementById('health-text'),
       xpBar: document.getElementById('xp-bar'),
       levelDisplay: document.getElementById('level-display'),
       stageInfo: document.getElementById('stage-info'),
@@ -201,6 +202,26 @@ export class UI {
   updateHealth(current, max) {
     const percent = (current / max) * 100;
     this.elements.healthBar.style.width = `${percent}%`;
+    this.elements.healthText.textContent = `${Math.ceil(current)} / ${Math.ceil(max)}`;
+  }
+
+  // Show damage taken by the player (red, near the player)
+  showPlayerDamage(damage, screenX, screenY) {
+    const element = document.createElement('div');
+    element.className = 'player-damage-number';
+    element.textContent = `-${Math.round(damage)}`;
+
+    // Position near the player with some random offset
+    const offsetX = Math.random() * 30 - 15;
+    const offsetY = Math.random() * 20 - 10;
+    element.style.left = `${screenX + offsetX}px`;
+    element.style.top = `${screenY + offsetY}px`;
+
+    document.getElementById('ui-overlay').appendChild(element);
+
+    setTimeout(() => {
+      element.remove();
+    }, 1000);
   }
 
   updateXP(current, required) {

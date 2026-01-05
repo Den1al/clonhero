@@ -4,11 +4,33 @@ class AudioManager {
   constructor() {
     this.sounds = {};
     this.music = null;
-    this.soundEnabled = true;
-    this.musicEnabled = true;
-    this.soundVolume = 0.5;
-    this.musicVolume = 0.3;
     this.initialized = false;
+
+    // Load settings from localStorage or use defaults
+    this.soundEnabled = this.loadSetting('soundEnabled', true);
+    this.musicEnabled = this.loadSetting('musicEnabled', true);
+    this.soundVolume = this.loadSetting('soundVolume', 0.5);
+    this.musicVolume = this.loadSetting('musicVolume', 0.3);
+  }
+
+  // Load a setting from localStorage with a default fallback
+  loadSetting(key, defaultValue) {
+    try {
+      const stored = localStorage.getItem(`clonhero_${key}`);
+      if (stored === null) return defaultValue;
+      return JSON.parse(stored);
+    } catch {
+      return defaultValue;
+    }
+  }
+
+  // Save a setting to localStorage
+  saveSetting(key, value) {
+    try {
+      localStorage.setItem(`clonhero_${key}`, JSON.stringify(value));
+    } catch {
+      // localStorage might be unavailable (private browsing, etc.)
+    }
   }
 
   init() {
@@ -378,6 +400,7 @@ class AudioManager {
 
   setSoundVolume(volume) {
     this.soundVolume = volume;
+    this.saveSetting('soundVolume', volume);
     Object.values(this.sounds).forEach(sound => {
       sound.volume(volume);
     });
@@ -385,6 +408,7 @@ class AudioManager {
 
   setMusicVolume(volume) {
     this.musicVolume = volume;
+    this.saveSetting('musicVolume', volume);
     if (this.music) {
       this.music.volume(volume);
     }
@@ -392,11 +416,13 @@ class AudioManager {
 
   toggleSound() {
     this.soundEnabled = !this.soundEnabled;
+    this.saveSetting('soundEnabled', this.soundEnabled);
     return this.soundEnabled;
   }
 
   toggleMusic() {
     this.musicEnabled = !this.musicEnabled;
+    this.saveSetting('musicEnabled', this.musicEnabled);
     if (this.musicEnabled) {
       this.resumeMusic();
     } else {
