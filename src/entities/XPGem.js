@@ -18,11 +18,12 @@ export class XPGem {
   createMesh() {
     const group = new THREE.Group();
 
+    // Gem with simpler geometry for performance
     const geometry = new THREE.OctahedronGeometry(0.15, 0);
     const material = new THREE.MeshStandardMaterial({
-      color: 0x2ecc71,
-      emissive: 0x27ae60,
-      emissiveIntensity: 0.5,
+      color: 0x22c55e,
+      emissive: 0x22c55e,
+      emissiveIntensity: 0.7,
       metalness: 0.8,
       roughness: 0.2,
       transparent: true,
@@ -30,17 +31,21 @@ export class XPGem {
     });
 
     const gem = new THREE.Mesh(geometry, material);
-    gem.castShadow = true;
+    gem.castShadow = false; // Disable shadow for performance
     group.add(gem);
 
-    const glowGeometry = new THREE.SphereGeometry(0.25, 8, 8);
+    // Glow effect with reduced segments
+    const glowGeometry = new THREE.SphereGeometry(0.24, 8, 8);
     const glowMaterial = new THREE.MeshBasicMaterial({
-      color: 0x2ecc71,
+      color: 0x86efac,
       transparent: true,
       opacity: 0.2
     });
     const glow = new THREE.Mesh(glowGeometry, glowMaterial);
     group.add(glow);
+
+    // No point light - emissive materials provide glow
+    this.pointLight = null;
 
     this.mesh = group;
     this.mesh.visible = false;
@@ -72,18 +77,28 @@ export class XPGem {
     const scale = 0.8 + (value / 50) * 0.4;
     this.mesh.scale.setScalar(scale);
 
+    // Enhanced color tiers with vivid colors
     if (value >= 50) {
-      this.gem.material.color.setHex(0xf1c40f);
-      this.gem.material.emissive.setHex(0xf39c12);
-      this.glow.material.color.setHex(0xf1c40f);
+      // Epic - Gold
+      this.gem.material.color.setHex(0xfbbf24);
+      this.gem.material.emissive.setHex(0xfbbf24);
+      this.gem.material.emissiveIntensity = 0.8;
+      this.glow.material.color.setHex(0xfde68a);
+      if (this.pointLight) this.pointLight.color.setHex(0xfbbf24);
     } else if (value >= 20) {
-      this.gem.material.color.setHex(0x3498db);
-      this.gem.material.emissive.setHex(0x2980b9);
-      this.glow.material.color.setHex(0x3498db);
+      // Rare - Blue/Cyan
+      this.gem.material.color.setHex(0x6366f1);
+      this.gem.material.emissive.setHex(0x6366f1);
+      this.gem.material.emissiveIntensity = 0.7;
+      this.glow.material.color.setHex(0xa5b4fc);
+      if (this.pointLight) this.pointLight.color.setHex(0x6366f1);
     } else {
-      this.gem.material.color.setHex(0x2ecc71);
-      this.gem.material.emissive.setHex(0x27ae60);
-      this.glow.material.color.setHex(0x2ecc71);
+      // Common - Green
+      this.gem.material.color.setHex(0x22c55e);
+      this.gem.material.emissive.setHex(0x22c55e);
+      this.gem.material.emissiveIntensity = 0.6;
+      this.glow.material.color.setHex(0x86efac);
+      if (this.pointLight) this.pointLight.color.setHex(0x22c55e);
     }
   }
 

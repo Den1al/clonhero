@@ -102,18 +102,8 @@ export class UI {
 
       if (ability.stacks > 1) {
         const stackBadge = document.createElement('span');
-        stackBadge.style.cssText = `
-          position: absolute;
-          bottom: -5px;
-          right: -5px;
-          background: #e74c3c;
-          color: white;
-          font-size: 10px;
-          padding: 2px 5px;
-          border-radius: 10px;
-        `;
+        stackBadge.className = 'stack-badge';
         stackBadge.textContent = ability.stacks;
-        icon.style.position = 'relative';
         icon.appendChild(stackBadge);
       }
 
@@ -221,13 +211,15 @@ export class UI {
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 32px;
-      font-weight: bold;
-      color: #2ecc71;
-      text-shadow: 0 0 10px #27ae60, 0 0 20px #27ae60;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: #fbbf24;
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(251, 191, 36, 0.4);
       animation: xpCollectedAnim 1.5s ease-out forwards;
       pointer-events: none;
       z-index: 1000;
+      letter-spacing: 2px;
     `;
 
     document.getElementById('ui-overlay').appendChild(element);
@@ -258,7 +250,7 @@ export class UI {
     const indicator = document.createElement('div');
     indicator.id = 'god-mode-indicator';
     indicator.innerHTML = `
-      <div class="god-mode-title">🔥 GOD MODE 🔥</div>
+      <div class="god-mode-title">GOD MODE</div>
       <div class="god-mode-keys">
         <span><kbd>S</kbd> Skill</span>
         <span><kbd>E</kbd> Victory</span>
@@ -267,46 +259,52 @@ export class UI {
     `;
     indicator.style.cssText = `
       position: fixed;
-      top: 10px;
-      right: 10px;
-      background: linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 140, 0, 0.9));
-      color: #1a1a2e;
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-family: 'Segoe UI', sans-serif;
+      top: 130px;
+      right: 24px;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.95), rgba(217, 119, 6, 0.95));
+      color: #0a0a0f;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-family: 'Orbitron', sans-serif;
       font-size: 12px;
-      font-weight: bold;
+      font-weight: 700;
       z-index: 9999;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4), 0 0 30px rgba(255, 140, 0, 0.2);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 40px rgba(251, 191, 36, 0.4);
       border: 2px solid rgba(255, 255, 255, 0.3);
       animation: godModePulse 2s ease-in-out infinite;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     `;
 
     // Add styles for the indicator content
     const style = document.createElement('style');
     style.textContent = `
       @keyframes godModePulse {
-        0%, 100% { box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4), 0 0 30px rgba(255, 140, 0, 0.2); }
-        50% { box-shadow: 0 4px 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 140, 0, 0.4); }
+        0%, 100% { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 40px rgba(251, 191, 36, 0.4); }
+        50% { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 60px rgba(251, 191, 36, 0.6); }
       }
       #god-mode-indicator .god-mode-title {
         text-align: center;
         font-size: 14px;
-        margin-bottom: 8px;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        margin-bottom: 10px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
       }
       #god-mode-indicator .god-mode-keys {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         font-size: 11px;
-        font-weight: normal;
+        font-weight: 500;
+        font-family: 'Rajdhani', sans-serif;
       }
       #god-mode-indicator kbd {
-        background: rgba(0,0,0,0.2);
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-family: monospace;
-        font-weight: bold;
+        background: rgba(0, 0, 0, 0.25);
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-family: 'Orbitron', monospace;
+        font-weight: 700;
+        font-size: 10px;
+        margin-right: 4px;
       }
     `;
     document.head.appendChild(style);

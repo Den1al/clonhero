@@ -5,17 +5,21 @@ export class Arena {
     this.scene = scene;
     this.size = size;
     this.obstacles = [];
+    this.decorations = [];
 
     this.createFloor();
     this.createWalls();
+    this.createAtmosphere();
   }
 
   createFloor() {
-    const floorGeometry = new THREE.PlaneGeometry(this.size, this.size);
+    // Main floor with rich dark emerald color
+    const floorGeometry = new THREE.PlaneGeometry(this.size, this.size, 32, 32);
     const floorMaterial = new THREE.MeshStandardMaterial({
-      color: 0x2d5a27,
-      roughness: 0.9,
-      metalness: 0.1
+      color: 0x1a3a2e,
+      roughness: 0.85,
+      metalness: 0.15,
+      envMapIntensity: 0.5
     });
 
     this.floor = new THREE.Mesh(floorGeometry, floorMaterial);
@@ -23,31 +27,56 @@ export class Arena {
     this.floor.receiveShadow = true;
     this.scene.add(this.floor);
 
+    // Enhanced grid with glowing effect
     const gridSize = this.size;
     const divisions = 20;
     const gridGeometry = new THREE.PlaneGeometry(gridSize, gridSize, divisions, divisions);
     const gridMaterial = new THREE.MeshBasicMaterial({
-      color: 0x1a3d17,
+      color: 0x22d3ee,
       wireframe: true,
       transparent: true,
-      opacity: 0.3
+      opacity: 0.08
     });
 
     this.grid = new THREE.Mesh(gridGeometry, gridMaterial);
     this.grid.rotation.x = -Math.PI / 2;
-    this.grid.position.y = 0.01;
+    this.grid.position.y = 0.02;
     this.scene.add(this.grid);
+
+    // Add subtle inner glow ring
+    const glowRingGeometry = new THREE.RingGeometry(this.size * 0.35, this.size * 0.45, 64);
+    const glowRingMaterial = new THREE.MeshBasicMaterial({
+      color: 0x6366f1,
+      transparent: true,
+      opacity: 0.1,
+      side: THREE.DoubleSide
+    });
+    this.glowRing = new THREE.Mesh(glowRingGeometry, glowRingMaterial);
+    this.glowRing.rotation.x = -Math.PI / 2;
+    this.glowRing.position.y = 0.03;
+    this.scene.add(this.glowRing);
   }
 
   createWalls() {
-    const wallHeight = 2;
-    const wallThickness = 0.5;
+    const wallHeight = 2.5;
+    const wallThickness = 0.6;
     const halfSize = this.size / 2;
 
+    // Wall material with sleek dark appearance and subtle metallic sheen
     const wallMaterial = new THREE.MeshStandardMaterial({
-      color: 0x1a3d17,
-      roughness: 0.8,
-      metalness: 0.2
+      color: 0x1a2a3e,
+      roughness: 0.6,
+      metalness: 0.4,
+      envMapIntensity: 0.8
+    });
+
+    // Accent trim material
+    const trimMaterial = new THREE.MeshStandardMaterial({
+      color: 0x6366f1,
+      roughness: 0.3,
+      metalness: 0.7,
+      emissive: 0x6366f1,
+      emissiveIntensity: 0.2
     });
 
     const wallConfigs = [
@@ -59,6 +88,7 @@ export class Arena {
 
     this.walls = [];
     for (const config of wallConfigs) {
+      // Main wall
       const geometry = new THREE.BoxGeometry(config.width, wallHeight, config.depth);
       const wall = new THREE.Mesh(geometry, wallMaterial);
       wall.position.set(config.x, wallHeight / 2, config.z);
@@ -66,8 +96,16 @@ export class Arena {
       wall.receiveShadow = true;
       this.walls.push(wall);
       this.scene.add(wall);
+
+      // Glowing trim at top of wall
+      const trimGeometry = new THREE.BoxGeometry(config.width + 0.1, 0.08, config.depth + 0.1);
+      const trim = new THREE.Mesh(trimGeometry, trimMaterial);
+      trim.position.set(config.x, wallHeight + 0.04, config.z);
+      this.scene.add(trim);
+      this.decorations.push(trim);
     }
 
+    // Enhanced corner pillars with glowing accents
     const cornerPositions = [
       { x: -halfSize, z: -halfSize },
       { x: halfSize, z: -halfSize },
@@ -75,12 +113,72 @@ export class Arena {
       { x: halfSize, z: halfSize }
     ];
 
+    const pillarMaterial = new THREE.MeshStandardMaterial({
+      color: 0x252540,
+      roughness: 0.5,
+      metalness: 0.5
+    });
+
     for (const pos of cornerPositions) {
-      const pillarGeometry = new THREE.CylinderGeometry(0.3, 0.4, wallHeight + 0.5, 8);
-      const pillar = new THREE.Mesh(pillarGeometry, wallMaterial);
-      pillar.position.set(pos.x, (wallHeight + 0.5) / 2, pos.z);
+      // Main pillar body
+      const pillarGeometry = new THREE.CylinderGeometry(0.35, 0.45, wallHeight + 1, 8);
+      const pillar = new THREE.Mesh(pillarGeometry, pillarMaterial);
+      pillar.position.set(pos.x, (wallHeight + 1) / 2, pos.z);
       pillar.castShadow = true;
+      pillar.receiveShadow = true;
       this.scene.add(pillar);
+      this.decorations.push(pillar);
+
+      // Glowing ring on pillar
+      const ringGeometry = new THREE.TorusGeometry(0.4, 0.04, 8, 24);
+      const ringMaterial = new THREE.MeshStandardMaterial({
+        color: 0x22d3ee,
+        emissive: 0x22d3ee,
+        emissiveIntensity: 0.5,
+        roughness: 0.2,
+        metalness: 0.8
+      });
+      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(pos.x, wallHeight * 0.6, pos.z);
+      this.scene.add(ring);
+      this.decorations.push(ring);
+
+      // Pillar top cap
+      const capGeometry = new THREE.CylinderGeometry(0.5, 0.35, 0.3, 8);
+      const cap = new THREE.Mesh(capGeometry, trimMaterial);
+      cap.position.set(pos.x, wallHeight + 1 + 0.15, pos.z);
+      cap.castShadow = true;
+      this.scene.add(cap);
+      this.decorations.push(cap);
+    }
+  }
+
+  createAtmosphere() {
+    // Removed corner lights for performance - scene lighting is sufficient
+    this.cornerLights = [];
+
+    // Reduced particle count for better performance
+    const particleCount = 12;
+    const particleGeometry = new THREE.CircleGeometry(0.06, 6);
+    const particleMaterial = new THREE.MeshBasicMaterial({
+      color: 0x22d3ee,
+      transparent: true,
+      opacity: 0.25
+    });
+
+    for (let i = 0; i < particleCount; i++) {
+      const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+      const angle = (i / particleCount) * Math.PI * 2;
+      const radius = this.size / 2 - 3;
+      particle.position.set(
+        Math.cos(angle) * radius,
+        0.02,
+        Math.sin(angle) * radius
+      );
+      particle.rotation.x = -Math.PI / 2;
+      this.scene.add(particle);
+      this.decorations.push(particle);
     }
   }
 
@@ -211,10 +309,32 @@ export class Arena {
     this.grid.geometry.dispose();
     this.grid.material.dispose();
 
+    if (this.glowRing) {
+      this.scene.remove(this.glowRing);
+      this.glowRing.geometry.dispose();
+      this.glowRing.material.dispose();
+    }
+
     for (const wall of this.walls) {
       this.scene.remove(wall);
       wall.geometry.dispose();
       wall.material.dispose();
+    }
+
+    // Dispose decorations
+    for (const decoration of this.decorations) {
+      this.scene.remove(decoration);
+      if (decoration.geometry) decoration.geometry.dispose();
+      if (decoration.material) decoration.material.dispose();
+    }
+    this.decorations = [];
+
+    // Dispose corner lights
+    if (this.cornerLights) {
+      for (const light of this.cornerLights) {
+        this.scene.remove(light);
+      }
+      this.cornerLights = [];
     }
 
     this.clearObstacles();

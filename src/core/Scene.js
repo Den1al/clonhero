@@ -14,19 +14,28 @@ export class GameScene {
 
     this.screenShake = { intensity: 0, duration: 0 };
     this.originalCameraPosition = this.camera.position.clone();
+
+    // Time tracking for animated effects
+    this.time = 0;
   }
 
   setupRenderer() {
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       antialias: true,
-      alpha: false
+      alpha: false,
+      powerPreference: 'high-performance'
     });
     this.renderer.setSize(this.width, this.height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setClearColor(0x1a1a2e);
+    this.renderer.setClearColor(0x0a0a0f);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Enhanced tone mapping for better colors
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.2;
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
   }
 
   setupCamera() {
@@ -50,29 +59,47 @@ export class GameScene {
 
   setupScene() {
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.Fog(0x1a1a2e, 30, 50);
+    // Deeper, more atmospheric fog with purple tint
+    this.scene.fog = new THREE.FogExp2(0x0f0f1a, 0.025);
+
+    // Add subtle background gradient effect
+    this.scene.background = new THREE.Color(0x0a0a0f);
   }
 
   setupLighting() {
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    this.scene.add(ambientLight);
+    // Hemisphere light provides natural sky/ground variation - efficient
+    const hemiLight = new THREE.HemisphereLight(0x6366f1, 0x1a1a2e, 0.5);
+    this.scene.add(hemiLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 20, 10);
+    // Main directional light with reduced shadow map for performance
+    const directionalLight = new THREE.DirectionalLight(0xfff5e6, 1.0);
+    directionalLight.position.set(10, 25, 10);
     directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 2048;
-    directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.mapSize.width = 1024;
+    directionalLight.shadow.mapSize.height = 1024;
     directionalLight.shadow.camera.near = 0.5;
     directionalLight.shadow.camera.far = 50;
     directionalLight.shadow.camera.left = -20;
     directionalLight.shadow.camera.right = 20;
     directionalLight.shadow.camera.top = 20;
     directionalLight.shadow.camera.bottom = -20;
+    directionalLight.shadow.bias = -0.0001;
     this.scene.add(directionalLight);
+    this.directionalLight = directionalLight;
 
-    const pointLight = new THREE.PointLight(0x6c5ce7, 0.5, 30);
-    pointLight.position.set(0, 10, 0);
-    this.scene.add(pointLight);
+    // Fill light from opposite side - no shadows needed
+    const fillLight = new THREE.DirectionalLight(0x6366f1, 0.4);
+    fillLight.position.set(-10, 15, -10);
+    this.scene.add(fillLight);
+
+    // Removed extra point lights and rim lights for performance
+    this.accentLight = null;
+    this.cyanLight = null;
+  }
+
+  updateLighting(delta) {
+    this.time += delta;
+    // Light animation removed for performance
   }
 
   setupResizeHandler() {

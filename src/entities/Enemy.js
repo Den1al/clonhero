@@ -17,7 +17,9 @@ const EnemyConfigs = {
     damage: 10,
     speed: 2.5,
     xpValue: 10,
-    color: 0xe74c3c,
+    color: 0xef4444,          // Vivid red
+    emissive: 0xef4444,
+    emissiveIntensity: 0.15,
     size: 0.4,
     shape: 'box'
   },
@@ -26,7 +28,9 @@ const EnemyConfigs = {
     damage: 8,
     speed: 1.5,
     xpValue: 15,
-    color: 0x9b59b6,
+    color: 0xa855f7,          // Vivid purple
+    emissive: 0xa855f7,
+    emissiveIntensity: 0.2,
     size: 0.35,
     shape: 'octahedron',
     attackRange: 8,
@@ -38,7 +42,9 @@ const EnemyConfigs = {
     damage: 20,
     speed: 3,
     xpValue: 20,
-    color: 0xf39c12,
+    color: 0xf97316,          // Vivid orange
+    emissive: 0xf97316,
+    emissiveIntensity: 0.25,
     size: 0.45,
     shape: 'sphere',
     explosionRadius: 2,
@@ -49,7 +55,9 @@ const EnemyConfigs = {
     damage: 5,
     speed: 0,
     xpValue: 30,
-    color: 0x1abc9c,
+    color: 0x14b8a6,          // Teal
+    emissive: 0x14b8a6,
+    emissiveIntensity: 0.2,
     size: 0.6,
     shape: 'cylinder',
     spawnCooldown: 4,
@@ -60,7 +68,9 @@ const EnemyConfigs = {
     damage: 20,
     speed: 1,
     xpValue: 40,
-    color: 0x7f8c8d,
+    color: 0x64748b,          // Slate gray
+    emissive: 0x64748b,
+    emissiveIntensity: 0.1,
     size: 0.7,
     shape: 'box'
   },
@@ -69,7 +79,9 @@ const EnemyConfigs = {
     damage: 30,
     speed: 1.5,
     xpValue: 200,
-    color: 0x8e44ad,
+    color: 0xc026d3,          // Vivid fuchsia
+    emissive: 0xc026d3,
+    emissiveIntensity: 0.35,
     size: 1.2,
     shape: 'dodecahedron',
     attackRange: 10,
@@ -161,14 +173,19 @@ export class Enemy {
 
     const material = new THREE.MeshStandardMaterial({
       color: this.config.color,
-      metalness: 0.3,
-      roughness: 0.7
+      emissive: this.config.emissive || this.config.color,
+      emissiveIntensity: this.config.emissiveIntensity || 0.15,
+      metalness: 0.4,
+      roughness: 0.5
     });
 
     const body = new THREE.Mesh(geometry, material);
     body.castShadow = true;
     body.receiveShadow = true;
     group.add(body);
+
+    // Simplified ground indicator (no glow mesh for regular enemies)
+    this.glowMesh = null;
 
     if (this.type === EnemyTypes.SHOOTER) {
       const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);

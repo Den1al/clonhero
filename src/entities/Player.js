@@ -70,11 +70,13 @@ export class Player {
   createMesh() {
     const group = new THREE.Group();
 
-    const bodyGeometry = new THREE.CapsuleGeometry(0.4, 0.8, 8, 16);
+    // Enhanced body with vibrant blue and metallic sheen
+    const bodyGeometry = new THREE.CapsuleGeometry(0.4, 0.8, 12, 24);
     const bodyMaterial = new THREE.MeshStandardMaterial({
-      color: 0x3498db,
-      metalness: 0.3,
-      roughness: 0.7
+      color: 0x6366f1,
+      metalness: 0.5,
+      roughness: 0.4,
+      envMapIntensity: 1.0
     });
     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
     body.position.y = 0.6;
@@ -82,28 +84,85 @@ export class Player {
     body.receiveShadow = true;
     group.add(body);
 
-    const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+    // Body accent ring for visual interest
+    const accentRingGeometry = new THREE.TorusGeometry(0.42, 0.03, 8, 32);
+    const accentMaterial = new THREE.MeshStandardMaterial({
+      color: 0x22d3ee,
+      emissive: 0x22d3ee,
+      emissiveIntensity: 0.4,
+      metalness: 0.8,
+      roughness: 0.2
+    });
+    const accentRing = new THREE.Mesh(accentRingGeometry, accentMaterial);
+    accentRing.position.y = 0.6;
+    accentRing.rotation.x = Math.PI / 2;
+    group.add(accentRing);
+    this.accentRing = accentRing;
+
+    // Enhanced head with better skin tone and subsurface look
+    const headGeometry = new THREE.SphereGeometry(0.25, 24, 24);
     const headMaterial = new THREE.MeshStandardMaterial({
-      color: 0xf5d5c8,
-      metalness: 0.1,
-      roughness: 0.8
+      color: 0xf0d0c0,
+      metalness: 0.05,
+      roughness: 0.7
     });
     const head = new THREE.Mesh(headGeometry, headMaterial);
     head.position.y = 1.35;
     head.castShadow = true;
     group.add(head);
 
-    const bowGeometry = new THREE.TorusGeometry(0.3, 0.05, 8, 16, Math.PI);
+    // Add simple hair/helmet accent
+    const hairGeometry = new THREE.SphereGeometry(0.23, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+    const hairMaterial = new THREE.MeshStandardMaterial({
+      color: 0x2d2d4a,
+      metalness: 0.3,
+      roughness: 0.6
+    });
+    const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+    hair.position.y = 1.38;
+    hair.rotation.x = Math.PI;
+    group.add(hair);
+
+    // Enhanced bow with golden accents
+    const bowGeometry = new THREE.TorusGeometry(0.32, 0.04, 8, 24, Math.PI);
     const bowMaterial = new THREE.MeshStandardMaterial({
-      color: 0x8b4513,
-      metalness: 0.2,
-      roughness: 0.8
+      color: 0xfbbf24,
+      metalness: 0.7,
+      roughness: 0.3,
+      emissive: 0xfbbf24,
+      emissiveIntensity: 0.15
     });
     const bow = new THREE.Mesh(bowGeometry, bowMaterial);
     bow.position.set(0.5, 0.8, 0);
     bow.rotation.z = Math.PI / 2;
     bow.rotation.y = Math.PI / 2;
+    bow.castShadow = true;
     group.add(bow);
+
+    // Bow string (simple line)
+    const stringGeometry = new THREE.CylinderGeometry(0.008, 0.008, 0.64, 8);
+    const stringMaterial = new THREE.MeshStandardMaterial({
+      color: 0xe5e5e5,
+      metalness: 0.1,
+      roughness: 0.8
+    });
+    const bowString = new THREE.Mesh(stringGeometry, stringMaterial);
+    bowString.position.set(0.5, 0.8, 0);
+    bowString.rotation.z = Math.PI / 2;
+    group.add(bowString);
+
+    // Add subtle glow effect underneath player
+    const glowGeometry = new THREE.CircleGeometry(0.6, 32);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+      color: 0x6366f1,
+      transparent: true,
+      opacity: 0.15
+    });
+    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    glow.rotation.x = -Math.PI / 2;
+    glow.position.y = 0.02;
+    group.add(glow);
+    this.glowMesh = glow;
 
     this.mesh = group;
     this.mesh.position.y = 0;

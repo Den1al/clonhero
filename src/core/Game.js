@@ -275,7 +275,7 @@ export class Game {
 
     this.collisionSystem.separateEnemies(this.enemies);
 
-    this.projectileSystem.update(delta, this.enemies, this.player, this.arenaSize);
+    this.projectileSystem.update(delta, this.enemies, this.player, this.arenaSize, this.arena.getObstacles());
     this.particleSystem.update(delta);
 
     const collectedXP = this.xpGemSystem.update(

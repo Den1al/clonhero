@@ -3,37 +3,42 @@ import { ObjectPool } from '../utils/ObjectPool.js';
 import { MathUtils } from '../utils/MathUtils.js';
 import { StatusEffectTypes } from '../systems/StatusEffectSystem.js';
 
-// Color configurations for elemental projectiles
+// Enhanced color configurations for elemental projectiles
 const ElementalColors = {
   [StatusEffectTypes.BURN]: {
-    core: 0xff4500,
-    emissive: 0xff6600,
-    glow: 0xff8c00,
-    trail: 0xffa500
+    core: 0xf97316,           // Vivid orange
+    emissive: 0xfb923c,
+    glow: 0xfdba74,
+    trail: 0xfed7aa,
+    intensity: 0.8
   },
   [StatusEffectTypes.FREEZE]: {
-    core: 0x00bfff,
-    emissive: 0x87ceeb,
-    glow: 0xadd8e6,
-    trail: 0xe0ffff
+    core: 0x22d3ee,           // Electric cyan
+    emissive: 0x67e8f9,
+    glow: 0xa5f3fc,
+    trail: 0xcffafe,
+    intensity: 0.7
   },
   [StatusEffectTypes.POISON]: {
-    core: 0x32cd32,
-    emissive: 0x228b22,
-    glow: 0x90ee90,
-    trail: 0x9acd32
+    core: 0x22c55e,           // Vivid green
+    emissive: 0x4ade80,
+    glow: 0x86efac,
+    trail: 0xbbf7d0,
+    intensity: 0.6
   },
   default: {
-    core: 0xf1c40f,
-    emissive: 0xf39c12,
-    glow: 0xf1c40f,
-    trail: 0xf39c12
+    core: 0xfbbf24,           // Gold/amber
+    emissive: 0xfcd34d,
+    glow: 0xfde68a,
+    trail: 0xfef3c7,
+    intensity: 0.7
   },
   enemy: {
-    core: 0xe74c3c,
-    emissive: 0xc0392b,
-    glow: 0xe74c3c,
-    trail: 0xc0392b
+    core: 0xef4444,           // Vivid red
+    emissive: 0xf87171,
+    glow: 0xfca5a5,
+    trail: 0xfecaca,
+    intensity: 0.6
   }
 };
 
@@ -65,29 +70,32 @@ export class Projectile {
   createMesh() {
     const group = new THREE.Group();
 
-    const coreGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+    // Core with reduced geometry complexity
+    const coreGeometry = new THREE.SphereGeometry(0.16, 8, 8);
     const coreMaterial = new THREE.MeshStandardMaterial({
-      color: 0xf1c40f,
-      emissive: 0xf39c12,
-      emissiveIntensity: 0.5,
+      color: 0xfbbf24,
+      emissive: 0xfcd34d,
+      emissiveIntensity: 0.8,
       metalness: 0.8,
       roughness: 0.2
     });
     const core = new THREE.Mesh(coreGeometry, coreMaterial);
     group.add(core);
 
-    const glowGeometry = new THREE.SphereGeometry(0.25, 8, 8);
+    // Outer glow sphere - reduced segments
+    const glowGeometry = new THREE.SphereGeometry(0.26, 8, 8);
     const glowMaterial = new THREE.MeshBasicMaterial({
-      color: 0xf1c40f,
+      color: 0xfde68a,
       transparent: true,
       opacity: 0.3
     });
     const glow = new THREE.Mesh(glowGeometry, glowMaterial);
     group.add(glow);
 
-    const trailGeometry = new THREE.ConeGeometry(0.1, 0.4, 8);
+    // Trail with reduced segments
+    const trailGeometry = new THREE.ConeGeometry(0.1, 0.4, 6);
     const trailMaterial = new THREE.MeshBasicMaterial({
-      color: 0xf39c12,
+      color: 0xfef3c7,
       transparent: true,
       opacity: 0.5
     });
@@ -95,6 +103,9 @@ export class Projectile {
     trail.rotation.x = Math.PI / 2;
     trail.position.z = 0.3;
     group.add(trail);
+
+    // No point light - emissive materials are sufficient
+    this.pointLight = null;
 
     this.mesh = group;
     this.mesh.visible = false;
@@ -139,8 +150,14 @@ export class Projectile {
 
     core.material.color.setHex(colors.core);
     core.material.emissive.setHex(colors.emissive);
+    core.material.emissiveIntensity = colors.intensity || 0.7;
     glow.material.color.setHex(colors.glow);
     trail.material.color.setHex(colors.trail);
+
+    // Update point light color
+    if (this.pointLight) {
+      this.pointLight.color.setHex(colors.core);
+    }
 
     const angle = Math.atan2(this.velocity.x, this.velocity.z);
     this.mesh.rotation.y = angle;
@@ -153,7 +170,7 @@ export class Projectile {
     return this.isPlayerProjectile ? ElementalColors.default.trail : ElementalColors.enemy.trail;
   }
 
-  update(delta, enemies, player, arenaSize) {
+  update(delta, enemies, player, arenaSize, obstacles = []) {
     if (!this.isActive) return;
 
     this.lifetime += delta;
@@ -181,6 +198,20 @@ export class Projectile {
 
     const angle = Math.atan2(this.velocity.x, this.velocity.z);
     this.mesh.rotation.y = angle;
+
+    // Check obstacle collisions
+    for (const obstacle of obstacles) {
+      const dx = this.mesh.position.x - obstacle.x;
+      const dz = this.mesh.position.z - obstacle.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      const projectileRadius = 0.2;
+
+      if (dist < projectileRadius + obstacle.radius) {
+        // Projectile hit an obstacle - deactivate it
+        this.deactivate();
+        return;
+      }
+    }
 
     if (this.bouncyWalls) {
       const halfSize = arenaSize / 2 - 0.5;
@@ -278,11 +309,11 @@ export class ProjectileSystem {
     return projectile;
   }
 
-  update(delta, enemies, player, arenaSize) {
+  update(delta, enemies, player, arenaSize, obstacles = []) {
     const toRelease = [];
 
     for (const projectile of this.pool.active) {
-      projectile.update(delta, enemies, player, arenaSize);
+      projectile.update(delta, enemies, player, arenaSize, obstacles);
 
       if (!projectile.isActive) {
         toRelease.push(projectile);
