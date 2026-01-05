@@ -52,15 +52,17 @@ class AudioManager {
 
     this.music = new Howl({
       src: [this.generateMusicDataUrl()],
+      format: ['wav'],
       loop: true,
       volume: this.musicVolume,
-      html5: true
+      html5: false // Use Web Audio API for gapless looping
     });
   }
 
   createSound(dataUrl, volume = 0.5) {
     return new Howl({
       src: [dataUrl],
+      format: ['wav'],
       volume: volume * this.soundVolume
     });
   }
@@ -148,21 +150,31 @@ class AudioManager {
   }
 
   generateShootSound() {
-    const buffer = new Float32Array(44100 * 0.1);
+    const duration = 0.1;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
       const freq = 800 - t * 4000;
-      const envelope = Math.exp(-t * 30);
+      // Smooth envelope with guaranteed fade to zero
+      const attack = Math.min(1, t * 100); // 10ms attack
+      const decay = Math.exp(-t * 30);
+      const fadeOut = t > duration - 0.01 ? (duration - t) / 0.01 : 1; // 10ms fade out
+      const envelope = attack * decay * fadeOut;
       buffer[i] = Math.sin(2 * Math.PI * freq * t) * envelope * 0.3;
     }
     return this.bufferToWav(buffer);
   }
 
   generateHitSound() {
-    const buffer = new Float32Array(44100 * 0.15);
+    const duration = 0.15;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
-      const envelope = Math.exp(-t * 25);
+      // Smooth envelope with attack and guaranteed fade to zero
+      const attack = Math.min(1, t * 200); // 5ms attack
+      const decay = Math.exp(-t * 25);
+      const fadeOut = t > duration - 0.015 ? (duration - t) / 0.015 : 1; // 15ms fade out
+      const envelope = attack * decay * fadeOut;
       const noise = (Math.random() * 2 - 1) * 0.3;
       const tone = Math.sin(2 * Math.PI * 200 * t) * 0.5;
       buffer[i] = (noise + tone) * envelope;
@@ -171,11 +183,16 @@ class AudioManager {
   }
 
   generateEnemyDeathSound() {
-    const buffer = new Float32Array(44100 * 0.3);
+    const duration = 0.3;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
       const freq = 300 - t * 600;
-      const envelope = Math.exp(-t * 10);
+      // Smooth envelope with attack and guaranteed fade to zero
+      const attack = Math.min(1, t * 100); // 10ms attack
+      const decay = Math.exp(-t * 10);
+      const fadeOut = t > duration - 0.03 ? (duration - t) / 0.03 : 1; // 30ms fade out
+      const envelope = attack * decay * fadeOut;
       const noise = (Math.random() * 2 - 1) * 0.2;
       buffer[i] = (Math.sin(2 * Math.PI * freq * t) * 0.6 + noise) * envelope;
     }
@@ -183,10 +200,15 @@ class AudioManager {
   }
 
   generatePlayerHitSound() {
-    const buffer = new Float32Array(44100 * 0.2);
+    const duration = 0.2;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
-      const envelope = Math.exp(-t * 15);
+      // Smooth envelope with attack and guaranteed fade to zero
+      const attack = Math.min(1, t * 100); // 10ms attack
+      const decay = Math.exp(-t * 15);
+      const fadeOut = t > duration - 0.02 ? (duration - t) / 0.02 : 1; // 20ms fade out
+      const envelope = attack * decay * fadeOut;
       const tone1 = Math.sin(2 * Math.PI * 150 * t);
       const tone2 = Math.sin(2 * Math.PI * 100 * t);
       buffer[i] = (tone1 * 0.5 + tone2 * 0.5) * envelope;
@@ -195,20 +217,24 @@ class AudioManager {
   }
 
   generateXPPickupSound() {
-    const buffer = new Float32Array(44100 * 0.1);
+    const duration = 0.1;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
       const freq = 600 + t * 800;
-      const envelope = 1 - t * 10;
-      if (envelope > 0) {
-        buffer[i] = Math.sin(2 * Math.PI * freq * t) * envelope * 0.3;
-      }
+      // Smooth envelope: quick attack, linear decay with guaranteed smooth end
+      const attack = Math.min(1, t * 200); // 5ms attack
+      const decay = Math.max(0, 1 - t * 10);
+      const fadeOut = t > duration - 0.01 ? (duration - t) / 0.01 : 1; // 10ms fade out
+      const envelope = attack * decay * fadeOut;
+      buffer[i] = Math.sin(2 * Math.PI * freq * t) * envelope * 0.3;
     }
     return this.bufferToWav(buffer);
   }
 
   generateLevelUpSound() {
-    const buffer = new Float32Array(44100 * 0.5);
+    const duration = 0.5;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
       let envelope = 0;
@@ -225,28 +251,40 @@ class AudioManager {
         envelope = Math.exp(-(t - 0.3) * 5);
       }
 
-      buffer[i] = Math.sin(2 * Math.PI * freq * t) * envelope * 0.4;
+      // Guaranteed smooth fade out at end
+      const fadeOut = t > duration - 0.05 ? (duration - t) / 0.05 : 1; // 50ms fade out
+      buffer[i] = Math.sin(2 * Math.PI * freq * t) * envelope * fadeOut * 0.4;
     }
     return this.bufferToWav(buffer);
   }
 
   generateAbilitySelectSound() {
-    const buffer = new Float32Array(44100 * 0.2);
+    const duration = 0.2;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
       const freq = 500 + Math.sin(t * 50) * 100;
-      const envelope = Math.exp(-t * 10);
+      // Smooth envelope with attack and guaranteed fade to zero
+      const attack = Math.min(1, t * 100); // 10ms attack
+      const decay = Math.exp(-t * 10);
+      const fadeOut = t > duration - 0.02 ? (duration - t) / 0.02 : 1; // 20ms fade out
+      const envelope = attack * decay * fadeOut;
       buffer[i] = Math.sin(2 * Math.PI * freq * t) * envelope * 0.4;
     }
     return this.bufferToWav(buffer);
   }
 
   generateDoorOpenSound() {
-    const buffer = new Float32Array(44100 * 0.4);
+    const duration = 0.4;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
       const freq = 100 + t * 300;
-      const envelope = Math.exp(-t * 5);
+      // Smooth envelope with attack and guaranteed fade to zero
+      const attack = Math.min(1, t * 50); // 20ms attack
+      const decay = Math.exp(-t * 5);
+      const fadeOut = t > duration - 0.04 ? (duration - t) / 0.04 : 1; // 40ms fade out
+      const envelope = attack * decay * fadeOut;
       const noise = (Math.random() * 2 - 1) * 0.1;
       buffer[i] = (Math.sin(2 * Math.PI * freq * t) * 0.5 + noise) * envelope;
     }
@@ -254,7 +292,8 @@ class AudioManager {
   }
 
   generateBossSpawnSound() {
-    const buffer = new Float32Array(44100 * 1);
+    const duration = 1;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
       const freq = 80 + Math.sin(t * 5) * 30;
@@ -264,6 +303,10 @@ class AudioManager {
       else if (t < 0.5) envelope = 1;
       else envelope = Math.exp(-(t - 0.5) * 3);
 
+      // Guaranteed smooth fade out at end
+      const fadeOut = t > duration - 0.1 ? (duration - t) / 0.1 : 1; // 100ms fade out
+      envelope *= fadeOut;
+
       const noise = (Math.random() * 2 - 1) * 0.1 * envelope;
       buffer[i] = (Math.sin(2 * Math.PI * freq * t) * 0.5 + noise) * envelope;
     }
@@ -272,7 +315,8 @@ class AudioManager {
 
   generateGateSpawnSound() {
     // Mystical ascending portal sound
-    const buffer = new Float32Array(44100 * 0.8);
+    const duration = 0.8;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
       // Rising frequency sweep
@@ -282,6 +326,10 @@ class AudioManager {
       if (t < 0.1) envelope = t * 10;
       else if (t < 0.5) envelope = 1;
       else envelope = Math.exp(-(t - 0.5) * 4);
+
+      // Guaranteed smooth fade out at end
+      const fadeOut = t > duration - 0.08 ? (duration - t) / 0.08 : 1; // 80ms fade out
+      envelope *= fadeOut;
 
       // Layered harmonics for ethereal sound
       const tone1 = Math.sin(2 * Math.PI * freq * t) * 0.3;
@@ -296,12 +344,17 @@ class AudioManager {
 
   generateGateEnterSound() {
     // Whooshing portal entry sound
-    const buffer = new Float32Array(44100 * 0.4);
+    const duration = 0.4;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
       // Descending whoosh
       const freq = 400 - t * 200;
-      let envelope = Math.exp(-t * 6);
+      // Smooth envelope with attack and guaranteed fade to zero
+      const attack = Math.min(1, t * 100); // 10ms attack
+      const decay = Math.exp(-t * 6);
+      const fadeOut = t > duration - 0.04 ? (duration - t) / 0.04 : 1; // 40ms fade out
+      const envelope = attack * decay * fadeOut;
 
       // Breathy whoosh with tone
       const tone = Math.sin(2 * Math.PI * freq * t) * 0.4;
@@ -315,7 +368,8 @@ class AudioManager {
 
   generateGateTransitionSound() {
     // Full transition whoosh - longer and more dramatic
-    const buffer = new Float32Array(44100 * 1.2);
+    const duration = 1.2;
+    const buffer = new Float32Array(44100 * duration);
     for (let i = 0; i < buffer.length; i++) {
       const t = i / 44100;
 
@@ -327,6 +381,10 @@ class AudioManager {
       if (t < 0.2) envelope = t * 5;
       else if (t < 0.8) envelope = 1;
       else envelope = Math.exp(-(t - 0.8) * 5);
+
+      // Guaranteed smooth fade out at end
+      const fadeOut = t > duration - 0.12 ? (duration - t) / 0.12 : 1; // 120ms fade out
+      envelope *= fadeOut;
 
       // Layered ethereal sounds
       const tone1 = Math.sin(2 * Math.PI * freq1 * t) * 0.25;
@@ -342,29 +400,70 @@ class AudioManager {
 
   generateMusicDataUrl() {
     const sampleRate = 44100;
-    const duration = 8;
-    const buffer = new Float32Array(sampleRate * duration);
+    const bpm = 120;
+    const beatsPerLoop = 16;
+    const secondsPerBeat = 60 / bpm;
+    const loopDuration = beatsPerLoop * secondsPerBeat; // 8 seconds per loop
+    const numLoops = 4; // Pre-bake 4 loops = 32 seconds total
+    const totalDuration = loopDuration * numLoops;
+    const totalSamples = Math.floor(sampleRate * totalDuration);
+    const buffer = new Float32Array(totalSamples);
 
-    const bassNotes = [110, 110, 146.83, 146.83, 130.81, 130.81, 98, 98];
-    const melodyNotes = [220, 261.63, 293.66, 329.63, 293.66, 261.63, 220, 196];
-
-    for (let i = 0; i < buffer.length; i++) {
+    // Generate the full multi-loop buffer
+    for (let i = 0; i < totalSamples; i++) {
       const t = i / sampleRate;
-      const beat = Math.floor(t * 2) % 8;
+      const loopT = t % loopDuration; // Time within current loop
+      const loopProgress = loopT / loopDuration; // 0 to 1 within each loop
+      const beatFloat = t / secondsPerBeat;
+      const beat = Math.floor(beatFloat) % beatsPerLoop;
+      const beatProgress = beatFloat % 1;
 
-      const bassFreq = bassNotes[beat];
-      const melodyFreq = melodyNotes[beat];
+      // Bass notes with per-beat envelope
+      const bassFreqs = [110, 110, 146.25, 146.25, 131.25, 131.25, 97.5, 97.5,
+                         110, 110, 146.25, 146.25, 131.25, 131.25, 97.5, 110];
+      const bassFreq = bassFreqs[beat];
+      const bassEnv = Math.sin(beatProgress * Math.PI);
+      const bass = Math.sin(2 * Math.PI * bassFreq * t) * 0.14 * bassEnv;
 
-      const bassSine = Math.sin(2 * Math.PI * bassFreq * t) * 0.15;
-      const melodySine = Math.sin(2 * Math.PI * melodyFreq * t) * 0.08;
+      // Melody with envelope
+      const melodyFreqs = [220, 261.25, 293.75, 330, 293.75, 261.25, 220, 195,
+                           220, 261.25, 293.75, 330, 293.75, 261.25, 195, 220];
+      const melodyFreq = melodyFreqs[beat];
+      const melodyEnv = Math.sin(beatProgress * Math.PI) * (beatProgress < 0.5 ? 1 : Math.exp(-(beatProgress - 0.5) * 4));
+      const melody = Math.sin(2 * Math.PI * melodyFreq * t) * 0.07 * melodyEnv;
 
-      const beatPhase = (t * 2) % 1;
-      const kick = beatPhase < 0.1 ? Math.sin(2 * Math.PI * (150 - beatPhase * 1000) * t) * Math.exp(-beatPhase * 30) * 0.2 : 0;
+      // Sub bass drone - continuous, uses loop-safe frequency
+      const subBass = Math.sin(2 * Math.PI * 55 * t) * 0.06;
 
-      const hihatPhase = ((t * 4) % 1);
-      const hihat = hihatPhase < 0.05 ? (Math.random() * 2 - 1) * Math.exp(-hihatPhase * 100) * 0.05 : 0;
+      // Kick drum
+      const kickT = beatProgress * secondsPerBeat;
+      const kickEnv = kickT < 0.1 ? Math.exp(-kickT * 35) : 0;
+      const kickFreq = 70 * Math.exp(-kickT * 20);
+      const kick = Math.sin(2 * Math.PI * kickFreq * kickT) * kickEnv * 0.18;
 
-      buffer[i] = bassSine + melodySine + kick + hihat;
+      // Hi-hat
+      const eighthProgress = (beatFloat * 2) % 1;
+      const hihatT = eighthProgress * (secondsPerBeat / 2);
+      const hihatEnv = hihatT < 0.04 ? Math.exp(-hihatT * 100) : 0;
+      const hihatPhase = eighthProgress * 2 * Math.PI;
+      const hihat = (Math.sin(hihatPhase * 50) * 0.5 +
+                     Math.sin(hihatPhase * 80) * 0.3 +
+                     Math.sin(hihatPhase * 120) * 0.2) * hihatEnv * 0.02;
+
+      // Pad with loop-safe frequencies
+      const padEnv = 0.5 + 0.5 * Math.sin(2 * Math.PI * loopProgress);
+      const pad = (Math.sin(2 * Math.PI * 220 * t) + Math.sin(2 * Math.PI * 330 * t) * 0.7) * 0.015 * padEnv;
+
+      buffer[i] = bass + melody + subBass + kick + hihat + pad;
+    }
+
+    // Crossfade the very end back to the very start for seamless looping
+    const crossfadeSamples = Math.floor(sampleRate * 0.1); // 100ms crossfade
+    for (let i = 0; i < crossfadeSamples; i++) {
+      const fadeOut = Math.cos((i / crossfadeSamples) * Math.PI * 0.5);
+      const fadeIn = Math.sin((i / crossfadeSamples) * Math.PI * 0.5);
+      const endIdx = totalSamples - crossfadeSamples + i;
+      buffer[i] = buffer[i] * fadeIn + buffer[endIdx] * fadeOut;
     }
 
     return this.bufferToWav(buffer);
@@ -377,24 +476,40 @@ class AudioManager {
 
   playMusic() {
     if (!this.musicEnabled || !this.music) return;
+    // Only start if not already playing
+    if (this.music.playing()) return;
+    // Fade in when starting music
+    this.music.volume(0);
     this.music.play();
+    this.music.fade(0, this.musicVolume, 500); // 500ms fade in
   }
 
   stopMusic() {
     if (this.music) {
-      this.music.stop();
+      // Fade out before stopping
+      this.music.fade(this.music.volume(), 0, 300); // 300ms fade out
+      setTimeout(() => {
+        if (this.music) this.music.stop();
+      }, 300);
     }
   }
 
   pauseMusic() {
     if (this.music) {
-      this.music.pause();
+      // Fade out before pausing
+      this.music.fade(this.music.volume(), 0, 200); // 200ms fade out
+      setTimeout(() => {
+        if (this.music) this.music.pause();
+      }, 200);
     }
   }
 
   resumeMusic() {
     if (this.musicEnabled && this.music) {
+      // Fade in when resuming
+      this.music.volume(0);
       this.music.play();
+      this.music.fade(0, this.musicVolume, 300); // 300ms fade in
     }
   }
 

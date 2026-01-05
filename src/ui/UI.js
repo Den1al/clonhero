@@ -70,6 +70,10 @@ export class UI {
     this.setupEventListeners();
     this.initializeSettingsUI();
     this.refreshScoreboard();
+
+    // Initialize and play music from the main menu
+    Audio.init();
+    Audio.playMusic();
   }
 
   createScreenFadeOverlay() {
