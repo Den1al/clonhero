@@ -1,3 +1,5 @@
+import { Audio } from '../core/Audio.js';
+
 export class UI {
   constructor() {
     this.elements = {
@@ -11,15 +13,25 @@ export class UI {
 
       startMenu: document.getElementById('start-menu'),
       pauseMenu: document.getElementById('pause-menu'),
+      settingsMenu: document.getElementById('settings-menu'),
       levelupScreen: document.getElementById('levelup-screen'),
       gameoverScreen: document.getElementById('gameover-screen'),
       victoryScreen: document.getElementById('victory-screen'),
 
       startBtn: document.getElementById('start-btn'),
+      settingsBtn: document.getElementById('settings-btn'),
+      pauseSettingsBtn: document.getElementById('pause-settings-btn'),
+      settingsBackBtn: document.getElementById('settings-back-btn'),
       resumeBtn: document.getElementById('resume-btn'),
       quitBtn: document.getElementById('quit-btn'),
       restartBtn: document.getElementById('restart-btn'),
       victoryRestartBtn: document.getElementById('victory-restart-btn'),
+
+      // Settings controls
+      musicToggle: document.getElementById('music-toggle'),
+      sfxToggle: document.getElementById('sfx-toggle'),
+      musicVolume: document.getElementById('music-volume'),
+      sfxVolume: document.getElementById('sfx-volume'),
 
       abilityChoices: document.getElementById('ability-choices'),
 
@@ -33,12 +45,14 @@ export class UI {
 
     this.damageNumbers = [];
     this.callbacks = {};
+    this.previousMenu = null; // Track where we came from when opening settings
 
     // Create screen fade overlay for gate transitions
     this.screenFadeOverlay = this.createScreenFadeOverlay();
     this.fadeAnimationId = null;
 
     this.setupEventListeners();
+    this.initializeSettingsUI();
   }
 
   createScreenFadeOverlay() {
@@ -84,6 +98,94 @@ export class UI {
     this.elements.victoryRestartBtn.addEventListener('click', () => {
       this.triggerCallback('restart');
     });
+
+    // Settings buttons
+    this.elements.settingsBtn.addEventListener('click', () => {
+      this.previousMenu = 'start';
+      this.showSettingsMenu();
+    });
+
+    this.elements.pauseSettingsBtn.addEventListener('click', () => {
+      this.previousMenu = 'pause';
+      this.showSettingsMenu();
+    });
+
+    this.elements.settingsBackBtn.addEventListener('click', () => {
+      this.hideSettingsMenu();
+    });
+
+    // Settings controls
+    this.elements.musicToggle.addEventListener('click', () => {
+      const enabled = Audio.toggleMusic();
+      this.updateToggleButton(this.elements.musicToggle, enabled);
+    });
+
+    this.elements.sfxToggle.addEventListener('click', () => {
+      const enabled = Audio.toggleSound();
+      this.updateToggleButton(this.elements.sfxToggle, enabled);
+    });
+
+    this.elements.musicVolume.addEventListener('input', (e) => {
+      const volume = e.target.value / 100;
+      Audio.setMusicVolume(volume);
+      this.updateSliderTrack(e.target);
+    });
+
+    this.elements.sfxVolume.addEventListener('input', (e) => {
+      const volume = e.target.value / 100;
+      Audio.setSoundVolume(volume);
+      this.updateSliderTrack(e.target);
+    });
+  }
+
+  initializeSettingsUI() {
+    // Set initial toggle states
+    this.updateToggleButton(this.elements.musicToggle, Audio.musicEnabled);
+    this.updateToggleButton(this.elements.sfxToggle, Audio.soundEnabled);
+
+    // Set initial slider values
+    this.elements.musicVolume.value = Audio.musicVolume * 100;
+    this.elements.sfxVolume.value = Audio.soundVolume * 100;
+
+    // Update slider track colors
+    this.updateSliderTrack(this.elements.musicVolume);
+    this.updateSliderTrack(this.elements.sfxVolume);
+  }
+
+  updateToggleButton(button, enabled) {
+    const icon = button.querySelector('.toggle-icon');
+    const text = button.querySelector('.toggle-text');
+
+    if (enabled) {
+      button.classList.add('active');
+      icon.textContent = '🔊';
+      text.textContent = 'ON';
+    } else {
+      button.classList.remove('active');
+      icon.textContent = '🔇';
+      text.textContent = 'OFF';
+    }
+  }
+
+  updateSliderTrack(slider) {
+    const value = slider.value;
+    slider.style.setProperty('--value', `${value}%`);
+  }
+
+  showSettingsMenu() {
+    this.elements.startMenu.classList.add('hidden');
+    this.elements.pauseMenu.classList.add('hidden');
+    this.elements.settingsMenu.classList.remove('hidden');
+  }
+
+  hideSettingsMenu() {
+    this.elements.settingsMenu.classList.add('hidden');
+
+    if (this.previousMenu === 'start') {
+      this.elements.startMenu.classList.remove('hidden');
+    } else if (this.previousMenu === 'pause') {
+      this.elements.pauseMenu.classList.remove('hidden');
+    }
   }
 
   on(event, callback) {
@@ -193,6 +295,7 @@ export class UI {
   hideAllMenus() {
     this.elements.startMenu.classList.add('hidden');
     this.elements.pauseMenu.classList.add('hidden');
+    this.elements.settingsMenu.classList.add('hidden');
     this.elements.levelupScreen.classList.add('hidden');
     this.elements.gameoverScreen.classList.add('hidden');
     this.elements.victoryScreen.classList.add('hidden');

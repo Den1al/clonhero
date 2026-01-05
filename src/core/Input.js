@@ -4,13 +4,18 @@ export class Input {
     this.movement = { x: 0, y: 0 };
     this.joystickActive = false;
     this.joystickPosition = { x: 0, y: 0 };
+    this.joystickOrigin = { x: 0, y: 0 };
     this.isMobile = this.detectMobile();
     this.touchId = null;
+    this.maxJoystickDistance = 50; // Max distance stick can move from center
 
     this.setupKeyboardListeners();
     this.setupTouchListeners();
 
-    if (!this.isMobile) {
+    // Initially hide joystick on mobile (it appears on touch)
+    if (this.isMobile) {
+      this.hideJoystick();
+    } else {
       document.getElementById('joystick-zone').style.display = 'none';
     }
   }
@@ -42,41 +47,59 @@ export class Input {
     const joystickStick = document.getElementById('joystick-stick');
     const joystickBase = document.getElementById('joystick-base');
 
-    const baseRect = joystickBase.getBoundingClientRect();
-    const maxDistance = baseRect.width / 2 - 25;
-
-    const handleTouch = (e) => {
-      e.preventDefault();
+    const handleTouchStart = (e) => {
+      // Only respond to touches on the left half of the screen (for movement)
+      // and ignore if we already have an active touch
+      if (this.touchId !== null) return;
 
       for (const touch of e.changedTouches) {
-        const rect = joystickZone.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
         const touchX = touch.clientX;
         const touchY = touch.clientY;
 
-        if (e.type === 'touchstart') {
-          if (touchX < window.innerWidth / 2) {
-            this.touchId = touch.identifier;
-            this.joystickActive = true;
-          }
-        }
+        // Only activate on left half of screen
+        if (touchX < window.innerWidth * 0.6) {
+          e.preventDefault();
+          this.touchId = touch.identifier;
+          this.joystickActive = true;
 
+          // Store the origin point where the user touched
+          this.joystickOrigin.x = touchX;
+          this.joystickOrigin.y = touchY;
+
+          // Position the joystick zone at the touch location
+          this.showJoystickAt(touchX, touchY);
+          break;
+        }
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (this.touchId === null) return;
+
+      for (const touch of e.changedTouches) {
         if (this.touchId === touch.identifier) {
-          let dx = touchX - centerX;
-          let dy = touchY - centerY;
+          e.preventDefault();
+
+          const touchX = touch.clientX;
+          const touchY = touch.clientY;
+
+          // Calculate offset from origin
+          let dx = touchX - this.joystickOrigin.x;
+          let dy = touchY - this.joystickOrigin.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance > maxDistance) {
-            dx = (dx / distance) * maxDistance;
-            dy = (dy / distance) * maxDistance;
+          // Clamp to max distance
+          if (distance > this.maxJoystickDistance) {
+            dx = (dx / distance) * this.maxJoystickDistance;
+            dy = (dy / distance) * this.maxJoystickDistance;
           }
 
+          // Move the stick visually
           joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 
-          this.joystickPosition.x = dx / maxDistance;
-          this.joystickPosition.y = dy / maxDistance;
+          // Normalize input values (-1 to 1)
+          this.joystickPosition.x = dx / this.maxJoystickDistance;
+          this.joystickPosition.y = dy / this.maxJoystickDistance;
         }
       }
     };
@@ -87,15 +110,48 @@ export class Input {
           this.touchId = null;
           this.joystickActive = false;
           this.joystickPosition = { x: 0, y: 0 };
+
+          // Reset stick position
           joystickStick.style.transform = 'translate(-50%, -50%)';
+
+          // Hide joystick
+          this.hideJoystick();
         }
       }
     };
 
-    joystickZone.addEventListener('touchstart', handleTouch, { passive: false });
-    window.addEventListener('touchmove', handleTouch, { passive: false });
-    window.addEventListener('touchend', handleTouchEnd);
-    window.addEventListener('touchcancel', handleTouchEnd);
+    // Listen on document for touch events to capture anywhere on screen
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('touchcancel', handleTouchEnd);
+  }
+
+  showJoystickAt(x, y) {
+    const joystickZone = document.getElementById('joystick-zone');
+    const joystickBase = document.getElementById('joystick-base');
+    const joystickStick = document.getElementById('joystick-stick');
+
+    // Get current joystick dimensions from computed style
+    const baseSize = parseInt(getComputedStyle(joystickBase).width) || 100;
+
+    // Position joystick zone centered at touch point
+    joystickZone.style.position = 'fixed';
+    joystickZone.style.left = `${x - baseSize / 2}px`;
+    joystickZone.style.top = `${y - baseSize / 2}px`;
+    joystickZone.style.bottom = 'auto';
+    joystickZone.style.width = `${baseSize}px`;
+    joystickZone.style.height = `${baseSize}px`;
+    joystickZone.style.opacity = '1';
+    joystickZone.style.pointerEvents = 'none'; // Let touches pass through
+
+    // Reset stick to center
+    joystickStick.style.transform = 'translate(-50%, -50%)';
+  }
+
+  hideJoystick() {
+    const joystickZone = document.getElementById('joystick-zone');
+    joystickZone.style.opacity = '0';
   }
 
   update() {
