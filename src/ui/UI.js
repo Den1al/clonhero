@@ -1,5 +1,6 @@
 import { Audio } from '../core/Audio.js';
 import { scoreboardManager } from '../utils/ScoreboardManager.js';
+import { difficultyManager, DifficultyLevel } from '../systems/DifficultyManager.js';
 
 export class UI {
   constructor() {
@@ -56,12 +57,21 @@ export class UI {
       // Scoreboard elements
       scoreboardContainer: document.getElementById('scoreboard-container'),
       scoreboardTotal: document.getElementById('scoreboard-total'),
-      scoreboardWins: document.getElementById('scoreboard-wins')
+      scoreboardWins: document.getElementById('scoreboard-wins'),
+
+      // Difficulty selection
+      difficultyOptions: document.getElementById('difficulty-options'),
+
+      // Level up status elements
+      levelupHealthBar: document.getElementById('levelup-health-bar'),
+      levelupHealthText: document.getElementById('levelup-health-text'),
+      levelupAbilities: document.getElementById('levelup-abilities')
     };
 
     this.damageNumbers = [];
     this.callbacks = {};
     this.previousMenu = null; // Track where we came from when opening settings
+    this.selectedDifficulty = DifficultyLevel.NORMAL;
 
     // Create screen fade overlay for gate transitions
     this.screenFadeOverlay = this.createScreenFadeOverlay();
@@ -69,6 +79,7 @@ export class UI {
 
     this.setupEventListeners();
     this.initializeSettingsUI();
+    this.setupDifficultySelection();
     this.refreshScoreboard();
 
     // Initialize and play music from the main menu
@@ -170,6 +181,32 @@ export class UI {
     this.elements.clearScoreboardBtn.addEventListener('click', () => {
       this.showClearScoreboardConfirm();
     });
+  }
+
+  setupDifficultySelection() {
+    if (!this.elements.difficultyOptions) return;
+
+    const buttons = this.elements.difficultyOptions.querySelectorAll('.difficulty-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove selected class from all buttons
+        buttons.forEach(b => b.classList.remove('selected'));
+        // Add selected class to clicked button
+        btn.classList.add('selected');
+
+        // Update selected difficulty
+        const difficulty = btn.dataset.difficulty;
+        this.selectedDifficulty = difficulty;
+        difficultyManager.setDifficulty(difficulty);
+
+        // Play sound feedback
+        Audio.play('abilitySelect');
+      });
+    });
+  }
+
+  getSelectedDifficulty() {
+    return this.selectedDifficulty;
   }
 
   initializeSettingsUI() {
@@ -301,9 +338,14 @@ export class UI {
     this.elements.pauseMenu.classList.remove('hidden');
   }
 
-  showLevelUpScreen(abilities, onSelect) {
+  showLevelUpScreen(abilities, onSelect, playerStats = null) {
     this.hideAllMenus();
     this.elements.levelupScreen.classList.remove('hidden');
+
+    // Update player status if provided
+    if (playerStats) {
+      this.updateLevelUpStatus(playerStats);
+    }
 
     this.elements.abilityChoices.innerHTML = '';
 
@@ -322,6 +364,45 @@ export class UI {
       });
 
       this.elements.abilityChoices.appendChild(card);
+    }
+  }
+
+  updateLevelUpStatus(playerStats) {
+    // Update health bar
+    if (this.elements.levelupHealthBar && this.elements.levelupHealthText) {
+      const healthPercent = (playerStats.health / playerStats.maxHealth) * 100;
+      this.elements.levelupHealthBar.style.width = `${healthPercent}%`;
+      this.elements.levelupHealthText.textContent = `${Math.ceil(playerStats.health)}/${playerStats.maxHealth}`;
+
+      // Update health bar color based on percentage
+      if (healthPercent <= 25) {
+        this.elements.levelupHealthBar.style.background = 'var(--gradient-danger)';
+      } else if (healthPercent <= 50) {
+        this.elements.levelupHealthBar.style.background = 'linear-gradient(90deg, var(--health-mid), #e85d26)';
+      } else {
+        this.elements.levelupHealthBar.style.background = 'var(--gradient-health)';
+      }
+    }
+
+    // Update abilities display
+    if (this.elements.levelupAbilities && playerStats.abilities) {
+      this.elements.levelupAbilities.innerHTML = '';
+
+      for (const ability of playerStats.abilities) {
+        const icon = document.createElement('div');
+        icon.className = 'levelup-ability-icon';
+        icon.innerHTML = ability.icon;
+        icon.title = `${ability.name} x${ability.stacks}`;
+
+        if (ability.stacks > 1) {
+          const stackBadge = document.createElement('span');
+          stackBadge.className = 'levelup-stack-badge';
+          stackBadge.textContent = ability.stacks;
+          icon.appendChild(stackBadge);
+        }
+
+        this.elements.levelupAbilities.appendChild(icon);
+      }
     }
   }
 

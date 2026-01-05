@@ -1,5 +1,6 @@
 import { EnemyTypes } from '../entities/Enemy.js';
 import { MathUtils } from '../utils/MathUtils.js';
+import { difficultyManager } from './DifficultyManager.js';
 
 const StageConfigs = [
   {
@@ -57,7 +58,31 @@ export class WaveSystem {
   getDifficultyMultiplier() {
     const stageConfig = this.getStageConfig();
     const roomBonus = 1 + (this.currentRoom * 0.05);
-    return stageConfig.difficultyMultiplier * roomBonus;
+    // Apply difficulty manager's enemy multipliers
+    const enemyHealthMult = difficultyManager.getEnemyHealthMultiplier();
+    const enemyDamageMult = difficultyManager.getEnemyDamageMultiplier();
+    // Use average of health and damage multipliers for general difficulty scaling
+    const difficultyMult = (enemyHealthMult + enemyDamageMult) / 2;
+    return stageConfig.difficultyMultiplier * roomBonus * difficultyMult;
+  }
+
+  /**
+   * Get enemy count adjusted for difficulty
+   */
+  getAdjustedEnemyCount(baseCount) {
+    const spawnMult = difficultyManager.getEnemySpawnMultiplier();
+    return Math.round(baseCount * spawnMult);
+  }
+
+  /**
+   * Get boss health multiplier adjusted for difficulty
+   */
+  getBossDifficultyMultiplier() {
+    const stageConfig = this.getStageConfig();
+    const roomBonus = 1 + (this.currentRoom * 0.05);
+    const baseMult = stageConfig.difficultyMultiplier * roomBonus;
+    // Apply difficulty manager's boss multiplier
+    return baseMult * difficultyManager.getBossHealthMultiplier();
   }
 
   startRoom() {
@@ -170,7 +195,8 @@ export class WaveSystem {
   generateNormalWave(stageConfig) {
     const enemies = [];
     const baseCount = 3 + this.currentRoom + this.currentWave * 2;
-    const enemyCount = Math.min(baseCount, 15);
+    const adjustedCount = this.getAdjustedEnemyCount(baseCount);
+    const enemyCount = Math.min(adjustedCount, 20); // Increased cap for higher difficulty
 
     const halfSize = this.arenaSize / 2 - 1;
     const spawnEdges = ['top', 'bottom', 'left', 'right'];
@@ -216,10 +242,11 @@ export class WaveSystem {
     enemies.push({
       type: stageConfig.bossType,
       position: { x: 0, z: -halfSize + 2 },
-      difficultyMultiplier: this.getDifficultyMultiplier() * 1.5
+      difficultyMultiplier: this.getBossDifficultyMultiplier() * 1.5
     });
 
-    const minionCount = 2 + this.currentStage;
+    const baseMinionCount = 2 + this.currentStage;
+    const minionCount = this.getAdjustedEnemyCount(baseMinionCount);
     for (let i = 0; i < minionCount; i++) {
       const angle = (i / minionCount) * Math.PI * 2;
       enemies.push({

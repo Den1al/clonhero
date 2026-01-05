@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MathUtils } from '../utils/MathUtils.js';
+import { difficultyManager } from '../systems/DifficultyManager.js';
 
 export class Player {
   constructor(scene) {
@@ -350,7 +351,7 @@ export class Player {
     this.health = Math.max(0, this.health);
 
     this.invulnerable = true;
-    this.invulnerableTimer = 1;
+    this.invulnerableTimer = difficultyManager.getInvulnerabilityDuration();
 
     this.flashDamage();
 
@@ -424,12 +425,12 @@ export class Player {
   }
 
   reset() {
-    // Reset base stats
-    this.maxHealth = 100;
+    // Reset base stats with difficulty adjustments
+    this.maxHealth = difficultyManager.getPlayerMaxHealth();
     this.health = this.maxHealth;
     this.speed = 5;
     this.attackSpeed = 1.5;
-    this.attackDamage = 10;
+    this.attackDamage = 10 * difficultyManager.getPlayerDamageMultiplier();
     this.attackRange = 15;
     this.projectileSpeed = 12;
     this.critChance = 0.05;
@@ -437,7 +438,7 @@ export class Player {
     this.dodge = 0;
     this.knockbackResistance = 0;
     this.xpMagnetRange = 2;
-    this.xpMultiplier = 1;
+    this.xpMultiplier = difficultyManager.getXPGainMultiplier();
 
     this.xp = 0;
     this.level = 1;

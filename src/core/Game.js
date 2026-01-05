@@ -14,6 +14,7 @@ import { RoomGate } from '../entities/RoomGate.js';
 import { CollisionSystem } from '../systems/CollisionSystem.js';
 import { AbilitySystem } from '../systems/AbilitySystem.js';
 import { WaveSystem } from '../systems/WaveSystem.js';
+import { difficultyManager } from '../systems/DifficultyManager.js';
 import { UI } from '../ui/UI.js';
 import { MathUtils } from '../utils/MathUtils.js';
 import { scoreboardManager } from '../utils/ScoreboardManager.js';
@@ -240,9 +241,16 @@ export class Game {
     Audio.play('levelUp');
     this.particleSystem.emitLevelUp(this.player.mesh.position);
 
+    // Gather player stats for display during level up
+    const playerStats = {
+      health: this.player.health,
+      maxHealth: this.player.maxHealth,
+      abilities: this.abilitySystem.getAcquiredAbilities()
+    };
+
     this.ui.showLevelUpScreen(abilities, (ability) => {
       this.selectAbility(ability);
-    });
+    }, playerStats);
   }
 
   selectAbility(ability) {
@@ -329,7 +337,8 @@ export class Game {
       time: this.totalTime,
       stage: this.waveSystem.currentStage,
       room: this.waveSystem.currentRoom,
-      victory: false
+      victory: false,
+      difficulty: difficultyManager.getDifficulty()
     };
 
     // Save run to scoreboard
@@ -353,7 +362,8 @@ export class Game {
       time: this.totalTime,
       stage: this.waveSystem.currentStage,
       room: this.waveSystem.currentRoom,
-      victory: true
+      victory: true,
+      difficulty: difficultyManager.getDifficulty()
     };
 
     // Save run to scoreboard
