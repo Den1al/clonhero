@@ -1331,6 +1331,27 @@
         font-size: 20px;
       }
 
+      /* Fix stacked skills - make ability bar scrollable on mobile */
+      #ability-bar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        max-width: 90%;
+        padding: var(--space-xs) var(--space-sm);
+        gap: var(--space-xs);
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+      }
+
+      #ability-bar::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+      }
+
+      .ability-icon {
+        flex-shrink: 0;
+      }
+
       /* Settings menu mobile adjustments */
       .settings-container {
         min-width: 280px;
