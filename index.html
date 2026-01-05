@@ -1993,6 +1993,270 @@
     }
 
     /* ========================================
+       END-GAME SCOREBOARD STYLES
+       ======================================== */
+    .endgame-scoreboard-section {
+      width: 100%;
+      max-width: 320px;
+      margin-bottom: var(--space-lg);
+    }
+
+    .endgame-scoreboard-header {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: var(--space-sm);
+      text-align: center;
+    }
+
+    .endgame-scoreboard-container {
+      background: var(--surface-glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .endgame-scoreboard-empty {
+      padding: var(--space-md);
+      text-align: center;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 13px;
+    }
+
+    .endgame-scoreboard-row {
+      display: grid;
+      grid-template-columns: 40px 1fr 80px;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      align-items: center;
+      border-bottom: 1px solid var(--surface-border);
+      transition: background var(--transition-fast);
+    }
+
+    .endgame-scoreboard-row:last-child {
+      border-bottom: none;
+    }
+
+    .endgame-scoreboard-row.current-run {
+      background: linear-gradient(90deg, rgba(252, 163, 38, 0.15), rgba(252, 163, 38, 0.05));
+      border-left: 3px solid var(--gold-400);
+    }
+
+    .endgame-scoreboard-row.rank-gold {
+      background: linear-gradient(90deg, rgba(252, 208, 118, 0.1), transparent);
+    }
+
+    .endgame-scoreboard-row.rank-silver {
+      background: linear-gradient(90deg, rgba(192, 192, 192, 0.08), transparent);
+    }
+
+    .endgame-scoreboard-row.rank-bronze {
+      background: linear-gradient(90deg, rgba(205, 127, 50, 0.08), transparent);
+    }
+
+    .endgame-scoreboard-row.current-run.rank-gold,
+    .endgame-scoreboard-row.current-run.rank-silver,
+    .endgame-scoreboard-row.current-run.rank-bronze {
+      background: linear-gradient(90deg, rgba(252, 163, 38, 0.2), rgba(252, 163, 38, 0.08));
+    }
+
+    .endgame-rank {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .rank-gold .endgame-rank { color: var(--gold-400); }
+    .rank-silver .endgame-rank { color: #c0c0c0; }
+    .rank-bronze .endgame-rank { color: #cd7f32; }
+
+    .endgame-run-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-secondary);
+      min-width: 0;
+    }
+
+    .endgame-level {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .endgame-kills {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .endgame-victory-badge {
+      color: var(--health-high);
+      font-size: 12px;
+    }
+
+    .endgame-score {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold-400);
+      text-align: right;
+    }
+
+    .current-run .endgame-score {
+      color: var(--gold-300);
+      text-shadow: 0 0 10px rgba(252, 163, 38, 0.5);
+    }
+
+    .endgame-scoreboard-separator {
+      padding: var(--space-xs);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      border-bottom: 1px solid var(--surface-border);
+    }
+
+    .endgame-buttons {
+      display: flex;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* Rank Badge Styles */
+    .rank-badge {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      padding: var(--space-sm) var(--space-lg);
+      border-radius: var(--radius-full);
+      margin-bottom: var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--surface-glass);
+      border: 1px solid var(--surface-border);
+      color: var(--text-secondary);
+    }
+
+    .rank-badge.hidden {
+      display: none;
+    }
+
+    .rank-badge-icon {
+      font-size: 20px;
+    }
+
+    .rank-badge-gold {
+      background: linear-gradient(135deg, rgba(252, 208, 118, 0.3), rgba(252, 163, 38, 0.2));
+      border-color: var(--gold-400);
+      color: var(--gold-300);
+      animation: rankBadgePulse 2s ease-in-out infinite;
+      box-shadow: 0 0 20px rgba(252, 163, 38, 0.3);
+    }
+
+    .rank-badge-top3 {
+      background: linear-gradient(135deg, rgba(192, 192, 192, 0.2), rgba(160, 160, 160, 0.15));
+      border-color: #c0c0c0;
+      color: #e0e0e0;
+    }
+
+    .rank-badge-top10 {
+      background: linear-gradient(135deg, rgba(85, 68, 136, 0.2), rgba(85, 68, 136, 0.1));
+      border-color: var(--primary-400);
+      color: var(--primary-300);
+    }
+
+    @keyframes rankBadgePulse {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(252, 163, 38, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 35px rgba(252, 163, 38, 0.5);
+      }
+    }
+
+    /* Mobile adjustments for end-game scoreboard */
+    @media (max-width: 768px) {
+      .endgame-scoreboard-section {
+        max-width: 280px;
+      }
+
+      .endgame-scoreboard-row {
+        grid-template-columns: 35px 1fr 70px;
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      .endgame-rank {
+        font-size: 12px;
+      }
+
+      .endgame-run-info {
+        font-size: 12px;
+        gap: var(--space-xs);
+      }
+
+      .endgame-kills {
+        font-size: 11px;
+      }
+
+      .endgame-score {
+        font-size: 13px;
+      }
+
+      .rank-badge {
+        font-size: 14px;
+        padding: var(--space-xs) var(--space-md);
+      }
+
+      .rank-badge-icon {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .endgame-scoreboard-section {
+        max-width: 240px;
+      }
+
+      .endgame-scoreboard-row {
+        grid-template-columns: 30px 1fr 60px;
+      }
+
+      .endgame-rank {
+        font-size: 11px;
+      }
+
+      .endgame-run-info {
+        font-size: 11px;
+      }
+
+      .endgame-level {
+        font-size: 11px;
+      }
+
+      .endgame-kills {
+        font-size: 10px;
+      }
+
+      .endgame-score {
+        font-size: 12px;
+      }
+
+      .rank-badge {
+        font-size: 12px;
+      }
+    }
+
+    /* ========================================
        UTILITY CLASSES
        ======================================== */
     .sr-only {
@@ -2137,7 +2401,15 @@
         <p>Time Survived <span id="go-time">0:00</span></p>
         <p class="stats-score-row">Score <span id="go-score">0</span></p>
       </div>
-      <button id="restart-btn" class="menu-btn">Try Again</button>
+      <div id="go-rank-badge" class="rank-badge hidden"></div>
+      <div id="go-scoreboard-section" class="endgame-scoreboard-section">
+        <div class="endgame-scoreboard-header">High Scores</div>
+        <div id="go-scoreboard-container" class="endgame-scoreboard-container"></div>
+      </div>
+      <div class="endgame-buttons">
+        <button id="restart-btn" class="menu-btn">Try Again</button>
+        <button id="go-menu-btn" class="menu-btn secondary">Main Menu</button>
+      </div>
     </div>
 
     <!-- Victory Screen -->
@@ -2149,7 +2421,15 @@
         <p>Completion Time <span id="vic-time">0:00</span></p>
         <p class="stats-score-row">Score <span id="vic-score">0</span></p>
       </div>
-      <button id="victory-restart-btn" class="menu-btn">Play Again</button>
+      <div id="vic-rank-badge" class="rank-badge hidden"></div>
+      <div id="vic-scoreboard-section" class="endgame-scoreboard-section">
+        <div class="endgame-scoreboard-header">High Scores</div>
+        <div id="vic-scoreboard-container" class="endgame-scoreboard-container"></div>
+      </div>
+      <div class="endgame-buttons">
+        <button id="victory-restart-btn" class="menu-btn">Play Again</button>
+        <button id="vic-menu-btn" class="menu-btn secondary">Main Menu</button>
+      </div>
     </div>
   </div>
 

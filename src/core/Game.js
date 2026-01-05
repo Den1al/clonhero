@@ -337,7 +337,8 @@ export class Game {
 
     this.ui.showGameOver({
       ...stats,
-      score: savedRun.score
+      score: savedRun.score,
+      runId: savedRun.id
     });
   }
 
@@ -360,7 +361,8 @@ export class Game {
 
     this.ui.showVictory({
       ...stats,
-      score: savedRun.score
+      score: savedRun.score,
+      runId: savedRun.id
     });
   }
 

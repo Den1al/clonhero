@@ -198,6 +198,26 @@ export class ScoreboardManager {
     this.runs = this.runs.filter(r => r.id !== id);
     this.saveRuns();
   }
+
+  /**
+   * Get the rank of a specific run by ID
+   * @param {number} id - Run ID to find rank for
+   * @returns {number} Rank (1-based), or -1 if not found
+   */
+  getRankById(id) {
+    const sortedRuns = this.getRunsByScore();
+    const index = sortedRuns.findIndex(r => r.id === id);
+    return index === -1 ? -1 : index + 1;
+  }
+
+  /**
+   * Check if a score would be a new high score (rank 1)
+   * @param {number} score - Score to check
+   * @returns {boolean} True if this would be rank 1
+   */
+  isNewHighScore(score) {
+    return score > this.getBestScore();
+  }
 }
 
 // Export singleton instance

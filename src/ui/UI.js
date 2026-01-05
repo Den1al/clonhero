@@ -27,7 +27,9 @@ export class UI {
       resumeBtn: document.getElementById('resume-btn'),
       quitBtn: document.getElementById('quit-btn'),
       restartBtn: document.getElementById('restart-btn'),
+      goMenuBtn: document.getElementById('go-menu-btn'),
       victoryRestartBtn: document.getElementById('victory-restart-btn'),
+      vicMenuBtn: document.getElementById('vic-menu-btn'),
 
       // Settings controls
       musicToggle: document.getElementById('music-toggle'),
@@ -42,10 +44,14 @@ export class UI {
       goKills: document.getElementById('go-kills'),
       goTime: document.getElementById('go-time'),
       goScore: document.getElementById('go-score'),
+      goRankBadge: document.getElementById('go-rank-badge'),
+      goScoreboardContainer: document.getElementById('go-scoreboard-container'),
       vicLevel: document.getElementById('vic-level'),
       vicKills: document.getElementById('vic-kills'),
       vicTime: document.getElementById('vic-time'),
       vicScore: document.getElementById('vic-score'),
+      vicRankBadge: document.getElementById('vic-rank-badge'),
+      vicScoreboardContainer: document.getElementById('vic-scoreboard-container'),
 
       // Scoreboard elements
       scoreboardContainer: document.getElementById('scoreboard-container'),
@@ -106,8 +112,16 @@ export class UI {
       this.triggerCallback('restart');
     });
 
+    this.elements.goMenuBtn.addEventListener('click', () => {
+      this.triggerCallback('quit');
+    });
+
     this.elements.victoryRestartBtn.addEventListener('click', () => {
       this.triggerCallback('restart');
+    });
+
+    this.elements.vicMenuBtn.addEventListener('click', () => {
+      this.triggerCallback('quit');
     });
 
     // Settings buttons
@@ -319,6 +333,9 @@ export class UI {
     this.elements.goKills.textContent = stats.kills;
     this.elements.goTime.textContent = this.formatTime(stats.time);
     this.elements.goScore.textContent = stats.score ? stats.score.toLocaleString() : '0';
+
+    // Show rank badge and populate end-game scoreboard
+    this.showEndgameScoreboard(stats.runId, this.elements.goRankBadge, this.elements.goScoreboardContainer);
   }
 
   showVictory(stats) {
@@ -329,6 +346,9 @@ export class UI {
     this.elements.vicKills.textContent = stats.kills;
     this.elements.vicTime.textContent = this.formatTime(stats.time);
     this.elements.vicScore.textContent = stats.score ? stats.score.toLocaleString() : '0';
+
+    // Show rank badge and populate end-game scoreboard
+    this.showEndgameScoreboard(stats.runId, this.elements.vicRankBadge, this.elements.vicScoreboardContainer);
   }
 
   hideAllMenus() {
@@ -707,5 +727,97 @@ export class UI {
     });
 
     this.elements.scoreboardContainer.innerHTML = html;
+  }
+
+  /**
+   * Show scoreboard on end-game screens with the current run highlighted
+   * @param {number} currentRunId - ID of the current run to highlight
+   * @param {HTMLElement} rankBadgeElement - Element to display the rank badge
+   * @param {HTMLElement} scoreboardContainerElement - Element to display the scoreboard
+   */
+  showEndgameScoreboard(currentRunId, rankBadgeElement, scoreboardContainerElement) {
+    const runs = scoreboardManager.getRunsByScore();
+    const currentRank = scoreboardManager.getRankById(currentRunId);
+    const totalRuns = scoreboardManager.getTotalRuns();
+
+    // Show rank badge
+    if (currentRank > 0) {
+      rankBadgeElement.classList.remove('hidden');
+      if (currentRank === 1) {
+        rankBadgeElement.innerHTML = `<span class="rank-badge-icon">&#127942;</span> New High Score!`;
+        rankBadgeElement.className = 'rank-badge rank-badge-gold';
+      } else if (currentRank <= 3) {
+        rankBadgeElement.innerHTML = `<span class="rank-badge-icon">&#127941;</span> Rank #${currentRank} of ${totalRuns}`;
+        rankBadgeElement.className = 'rank-badge rank-badge-top3';
+      } else if (currentRank <= 10) {
+        rankBadgeElement.innerHTML = `<span class="rank-badge-icon">&#11088;</span> Rank #${currentRank} of ${totalRuns}`;
+        rankBadgeElement.className = 'rank-badge rank-badge-top10';
+      } else {
+        rankBadgeElement.innerHTML = `Rank #${currentRank} of ${totalRuns}`;
+        rankBadgeElement.className = 'rank-badge';
+      }
+    } else {
+      rankBadgeElement.classList.add('hidden');
+    }
+
+    // Build scoreboard HTML - show top 5 scores
+    if (runs.length === 0) {
+      scoreboardContainerElement.innerHTML = `
+        <div class="endgame-scoreboard-empty">No previous runs</div>
+      `;
+      return;
+    }
+
+    // Get top 5 runs, but ensure current run is visible
+    let displayRuns = runs.slice(0, 5);
+    const currentRunInTop5 = displayRuns.some(r => r.id === currentRunId);
+
+    // If current run not in top 5 and exists, add it with separator
+    let currentRunData = null;
+    if (!currentRunInTop5 && currentRank > 0) {
+      currentRunData = runs.find(r => r.id === currentRunId);
+    }
+
+    let html = '';
+
+    displayRuns.forEach((run, index) => {
+      const isCurrentRun = run.id === currentRunId;
+      const rankNum = index + 1;
+      const rankClass = rankNum === 1 ? 'rank-gold' : rankNum === 2 ? 'rank-silver' : rankNum === 3 ? 'rank-bronze' : '';
+      const currentClass = isCurrentRun ? 'current-run' : '';
+      const victoryBadge = run.victory ? '<span class="endgame-victory-badge">&#9733;</span>' : '';
+
+      html += `
+        <div class="endgame-scoreboard-row ${currentClass} ${rankClass}">
+          <div class="endgame-rank">#${rankNum}</div>
+          <div class="endgame-run-info">
+            <span class="endgame-level">Lvl ${run.level}</span>
+            ${victoryBadge}
+            <span class="endgame-kills">${run.kills} kills</span>
+          </div>
+          <div class="endgame-score">${run.score.toLocaleString()}</div>
+        </div>
+      `;
+    });
+
+    // Add current run at bottom if not in top 5
+    if (currentRunData) {
+      html += `
+        <div class="endgame-scoreboard-separator">
+          <span>&#8942;</span>
+        </div>
+        <div class="endgame-scoreboard-row current-run">
+          <div class="endgame-rank">#${currentRank}</div>
+          <div class="endgame-run-info">
+            <span class="endgame-level">Lvl ${currentRunData.level}</span>
+            ${currentRunData.victory ? '<span class="endgame-victory-badge">&#9733;</span>' : ''}
+            <span class="endgame-kills">${currentRunData.kills} kills</span>
+          </div>
+          <div class="endgame-score">${currentRunData.score.toLocaleString()}</div>
+        </div>
+      `;
+    }
+
+    scoreboardContainerElement.innerHTML = html;
   }
 }
