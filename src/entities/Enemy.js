@@ -236,12 +236,454 @@ export class Enemy {
       group.add(crown);
     }
 
+    // === CUTE BUT DEADLY: Add personality features based on type ===
+    this.addCuteFeatures(group);
+
     this.mesh = group;
     this.mesh.position.set(position.x, this.config.size, position.z);
     this.body = body;
     this.originalColor = this.config.color;
 
     this.scene.add(this.mesh);
+  }
+
+  addCuteFeatures(group) {
+    switch (this.type) {
+      case EnemyTypes.CHASER:
+        this.addChaserFeatures(group);
+        break;
+      case EnemyTypes.SHOOTER:
+        this.addShooterFeatures(group);
+        break;
+      case EnemyTypes.BOMBER:
+        this.addBomberFeatures(group);
+        break;
+      case EnemyTypes.TANK:
+        this.addTankFeatures(group);
+        break;
+      case EnemyTypes.BOSS:
+        this.addBossFeatures(group);
+        break;
+    }
+  }
+
+  addChaserFeatures(group) {
+    const size = this.config.size;
+
+    // Angry eyebrows
+    const browGeometry = new THREE.BoxGeometry(0.2, 0.04, 0.06);
+    const browMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+
+    const leftBrow = new THREE.Mesh(browGeometry, browMaterial);
+    leftBrow.position.set(-0.15, size * 0.7, size + 0.02);
+    leftBrow.rotation.z = 0.4; // Angry angle
+    group.add(leftBrow);
+
+    const rightBrow = new THREE.Mesh(browGeometry, browMaterial);
+    rightBrow.position.set(0.15, size * 0.7, size + 0.02);
+    rightBrow.rotation.z = -0.4; // Angry angle (mirrored)
+    group.add(rightBrow);
+
+    // Angry eyes (narrowed)
+    const eyeGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+    const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+    const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    leftEye.position.set(-0.15, size * 0.5, size + 0.02);
+    leftEye.scale.set(1, 0.5, 0.5); // Narrowed/squinting
+    group.add(leftEye);
+
+    const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    rightEye.position.set(0.15, size * 0.5, size + 0.02);
+    rightEye.scale.set(1, 0.5, 0.5);
+    group.add(rightEye);
+
+    // Red pupils (menacing)
+    const pupilGeometry = new THREE.SphereGeometry(0.04, 6, 6);
+    const pupilMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+    leftPupil.position.z = 0.04;
+    leftEye.add(leftPupil);
+    const rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+    rightPupil.position.z = 0.04;
+    rightEye.add(rightPupil);
+
+    // Gritted teeth (jagged mouth)
+    const teethGeometry = new THREE.BoxGeometry(0.35, 0.08, 0.05);
+    const teethMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const teeth = new THREE.Mesh(teethGeometry, teethMaterial);
+    teeth.position.set(0, size * 0.1, size + 0.02);
+    group.add(teeth);
+
+    // Individual teeth marks (jagged line)
+    for (let i = 0; i < 5; i++) {
+      const toothGap = new THREE.Mesh(
+        new THREE.BoxGeometry(0.02, 0.1, 0.06),
+        new THREE.MeshBasicMaterial({ color: 0x000000 })
+      );
+      toothGap.position.set(-0.14 + i * 0.07, size * 0.1, size + 0.025);
+      group.add(toothGap);
+    }
+
+    // Tiny horns
+    const hornGeometry = new THREE.ConeGeometry(0.06, 0.2, 6);
+    const hornMaterial = new THREE.MeshStandardMaterial({
+      color: 0x2a0a0a,
+      roughness: 0.4,
+      metalness: 0.3
+    });
+
+    const leftHorn = new THREE.Mesh(hornGeometry, hornMaterial);
+    leftHorn.position.set(-0.25, size + 0.15, 0);
+    leftHorn.rotation.z = 0.3;
+    group.add(leftHorn);
+
+    const rightHorn = new THREE.Mesh(hornGeometry, hornMaterial);
+    rightHorn.position.set(0.25, size + 0.15, 0);
+    rightHorn.rotation.z = -0.3;
+    group.add(rightHorn);
+  }
+
+  addShooterFeatures(group) {
+    // Shooter already has eyes, but let's enhance with eyelids that squint
+    const size = this.config.size;
+
+    // Eyelids (half-closed, menacing look) - positioned over existing eyes
+    const eyelidGeometry = new THREE.SphereGeometry(0.11, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    const eyelidMaterial = new THREE.MeshStandardMaterial({
+      color: this.config.color,
+      emissive: this.config.emissive,
+      emissiveIntensity: 0.1
+    });
+
+    this.leftEyelid = new THREE.Mesh(eyelidGeometry, eyelidMaterial);
+    this.leftEyelid.position.set(-0.15, 0.15, size);
+    this.leftEyelid.rotation.x = Math.PI + 0.5; // Partially closed
+    group.add(this.leftEyelid);
+
+    this.rightEyelid = new THREE.Mesh(eyelidGeometry, eyelidMaterial);
+    this.rightEyelid.position.set(0.15, 0.15, size);
+    this.rightEyelid.rotation.x = Math.PI + 0.5;
+    group.add(this.rightEyelid);
+
+    // Magical wand
+    const wandGroup = new THREE.Group();
+    wandGroup.position.set(0.35, 0, 0.2);
+    wandGroup.rotation.z = -0.5;
+
+    // Wand shaft
+    const shaftGeometry = new THREE.CylinderGeometry(0.02, 0.025, 0.4, 6);
+    const shaftMaterial = new THREE.MeshStandardMaterial({
+      color: 0x4a2c2a,
+      roughness: 0.8
+    });
+    const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
+    wandGroup.add(shaft);
+
+    // Wand crystal tip
+    const crystalGeometry = new THREE.OctahedronGeometry(0.08);
+    const crystalMaterial = new THREE.MeshStandardMaterial({
+      color: 0xa855f7,
+      emissive: 0xa855f7,
+      emissiveIntensity: 0.5,
+      transparent: true,
+      opacity: 0.8
+    });
+    this.wandCrystal = new THREE.Mesh(crystalGeometry, crystalMaterial);
+    this.wandCrystal.position.y = 0.25;
+    wandGroup.add(this.wandCrystal);
+
+    // Wand sparkle particles
+    const sparkleGeometry = new THREE.SphereGeometry(0.02, 4, 4);
+    const sparkleMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.8
+    });
+    this.wandSparkles = [];
+    for (let i = 0; i < 3; i++) {
+      const sparkle = new THREE.Mesh(sparkleGeometry, sparkleMaterial.clone());
+      sparkle.position.y = 0.25;
+      wandGroup.add(sparkle);
+      this.wandSparkles.push(sparkle);
+    }
+
+    group.add(wandGroup);
+    this.wandGroup = wandGroup;
+  }
+
+  addBomberFeatures(group) {
+    const size = this.config.size;
+
+    // Worried/anxious eyes (wide, looking up)
+    const eyeGeometry = new THREE.SphereGeometry(0.1, 10, 10);
+    const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+    const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    leftEye.position.set(-0.15, size * 0.3, size * 0.85);
+    leftEye.scale.set(1, 1.3, 0.6); // Wide open, worried
+    group.add(leftEye);
+
+    const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    rightEye.position.set(0.15, size * 0.3, size * 0.85);
+    rightEye.scale.set(1, 1.3, 0.6);
+    group.add(rightEye);
+
+    // Small pupils looking up (nervous)
+    const pupilGeometry = new THREE.SphereGeometry(0.04, 6, 6);
+    const pupilMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+    leftPupil.position.set(0, 0.03, 0.05); // Looking up
+    leftEye.add(leftPupil);
+    const rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+    rightPupil.position.set(0, 0.03, 0.05);
+    rightEye.add(rightPupil);
+
+    // Worried eyebrows (raised, curved)
+    const browGeometry = new THREE.TorusGeometry(0.08, 0.015, 4, 8, Math.PI);
+    const browMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+
+    const leftBrow = new THREE.Mesh(browGeometry, browMaterial);
+    leftBrow.position.set(-0.15, size * 0.55, size * 0.85);
+    leftBrow.rotation.z = -0.3; // Worried angle
+    group.add(leftBrow);
+
+    const rightBrow = new THREE.Mesh(browGeometry, browMaterial);
+    rightBrow.position.set(0.15, size * 0.55, size * 0.85);
+    rightBrow.rotation.z = 0.3;
+    group.add(rightBrow);
+
+    // Small worried "O" mouth
+    const mouthGeometry = new THREE.TorusGeometry(0.06, 0.02, 8, 16);
+    const mouthMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const mouth = new THREE.Mesh(mouthGeometry, mouthMaterial);
+    mouth.position.set(0, size * -0.1, size * 0.9);
+    mouth.rotation.x = Math.PI / 2;
+    group.add(mouth);
+
+    // Sweat drop
+    const sweatGeometry = new THREE.SphereGeometry(0.04, 6, 6);
+    const sweatMaterial = new THREE.MeshBasicMaterial({
+      color: 0x88ccff,
+      transparent: true,
+      opacity: 0.7
+    });
+    this.sweatDrop = new THREE.Mesh(sweatGeometry, sweatMaterial);
+    this.sweatDrop.position.set(-0.3, size * 0.5, size * 0.5);
+    this.sweatDrop.scale.set(0.7, 1.2, 0.7); // Tear-drop shape
+    group.add(this.sweatDrop);
+  }
+
+  addTankFeatures(group) {
+    const size = this.config.size;
+
+    // Military helmet
+    const helmetGeometry = new THREE.SphereGeometry(size * 0.85, 12, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+    const helmetMaterial = new THREE.MeshStandardMaterial({
+      color: 0x3a4a3a, // Military green-gray
+      roughness: 0.7,
+      metalness: 0.3
+    });
+    const helmet = new THREE.Mesh(helmetGeometry, helmetMaterial);
+    helmet.position.y = size;
+    helmet.rotation.x = Math.PI;
+    group.add(helmet);
+
+    // Helmet rim
+    const rimGeometry = new THREE.TorusGeometry(size * 0.85, 0.05, 8, 24);
+    const rimMaterial = new THREE.MeshStandardMaterial({
+      color: 0x2a3a2a,
+      roughness: 0.6,
+      metalness: 0.4
+    });
+    const rim = new THREE.Mesh(rimGeometry, rimMaterial);
+    rim.position.y = size;
+    rim.rotation.x = Math.PI / 2;
+    group.add(rim);
+
+    // Stoic eyes (small, determined)
+    const eyeGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+    const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+    const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    leftEye.position.set(-0.2, size * 0.4, size + 0.02);
+    leftEye.scale.set(1, 0.6, 0.5); // Narrow, focused
+    group.add(leftEye);
+
+    const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    rightEye.position.set(0.2, size * 0.4, size + 0.02);
+    rightEye.scale.set(1, 0.6, 0.5);
+    group.add(rightEye);
+
+    // Tiny pupils
+    const pupilGeometry = new THREE.SphereGeometry(0.04, 6, 6);
+    const pupilMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 });
+    const leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+    leftPupil.position.z = 0.04;
+    leftEye.add(leftPupil);
+    const rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+    rightPupil.position.z = 0.04;
+    rightEye.add(rightPupil);
+
+    // Shield emblem on front
+    const emblemGroup = new THREE.Group();
+    emblemGroup.position.set(0, size * 0.2, size + 0.03);
+
+    // Shield shape (pentagon-ish)
+    const shieldShape = new THREE.Shape();
+    shieldShape.moveTo(0, 0.15);
+    shieldShape.lineTo(0.12, 0.1);
+    shieldShape.lineTo(0.12, -0.05);
+    shieldShape.lineTo(0, -0.15);
+    shieldShape.lineTo(-0.12, -0.05);
+    shieldShape.lineTo(-0.12, 0.1);
+    shieldShape.closePath();
+
+    const shieldGeometry = new THREE.ShapeGeometry(shieldShape);
+    const shieldMaterial = new THREE.MeshStandardMaterial({
+      color: 0xc0c0c0,
+      metalness: 0.7,
+      roughness: 0.3
+    });
+    const shield = new THREE.Mesh(shieldGeometry, shieldMaterial);
+    emblemGroup.add(shield);
+
+    // Cross on shield
+    const crossMaterial = new THREE.MeshBasicMaterial({ color: 0x8b0000 });
+    const crossV = new THREE.Mesh(
+      new THREE.BoxGeometry(0.03, 0.2, 0.01),
+      crossMaterial
+    );
+    crossV.position.z = 0.01;
+    emblemGroup.add(crossV);
+    const crossH = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.03, 0.01),
+      crossMaterial
+    );
+    crossH.position.z = 0.01;
+    emblemGroup.add(crossH);
+
+    group.add(emblemGroup);
+
+    // Stern mouth (flat line)
+    const mouthGeometry = new THREE.BoxGeometry(0.25, 0.03, 0.02);
+    const mouthMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 });
+    const mouth = new THREE.Mesh(mouthGeometry, mouthMaterial);
+    mouth.position.set(0, size * -0.1, size + 0.02);
+    group.add(mouth);
+  }
+
+  addBossFeatures(group) {
+    const size = this.config.size;
+
+    // Multiple creepy eyes (3 pairs at different heights)
+    const eyePositions = [
+      { x: -0.25, y: size * 0.3, scale: 1 },
+      { x: 0.25, y: size * 0.3, scale: 1 },
+      { x: -0.4, y: size * 0.6, scale: 0.7 },
+      { x: 0.4, y: size * 0.6, scale: 0.7 },
+      { x: -0.15, y: size * 0.8, scale: 0.5 },
+      { x: 0.15, y: size * 0.8, scale: 0.5 },
+    ];
+
+    this.bossEyes = [];
+    const eyeGeometry = new THREE.SphereGeometry(0.12, 10, 10);
+    const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Yellow evil eyes
+    const pupilGeometry = new THREE.SphereGeometry(0.05, 6, 6);
+    const pupilMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+
+    for (const pos of eyePositions) {
+      const eye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+      eye.position.set(pos.x, pos.y, size * 0.85);
+      eye.scale.setScalar(pos.scale);
+      group.add(eye);
+
+      const pupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+      pupil.position.z = 0.08;
+      eye.add(pupil);
+
+      this.bossEyes.push({ eye, pupil });
+    }
+
+    // Evil grin (curved, wide)
+    const grinShape = new THREE.Shape();
+    grinShape.moveTo(-0.4, 0);
+    grinShape.quadraticCurveTo(0, -0.15, 0.4, 0);
+    grinShape.quadraticCurveTo(0, 0.05, -0.4, 0);
+
+    const grinGeometry = new THREE.ShapeGeometry(grinShape);
+    const grinMaterial = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      side: THREE.DoubleSide
+    });
+    const grin = new THREE.Mesh(grinGeometry, grinMaterial);
+    grin.position.set(0, size * -0.2, size * 0.9);
+    group.add(grin);
+
+    // Sharp teeth in grin
+    for (let i = 0; i < 7; i++) {
+      const toothGeometry = new THREE.ConeGeometry(0.04, 0.1, 4);
+      const toothMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const tooth = new THREE.Mesh(toothGeometry, toothMaterial);
+      tooth.position.set(-0.3 + i * 0.1, size * -0.15, size * 0.92);
+      tooth.rotation.x = Math.PI;
+      group.add(tooth);
+    }
+
+    // Flowing cape
+    this.capeSegments = [];
+    const capeGroup = new THREE.Group();
+    capeGroup.position.set(0, size * 0.5, -size * 0.8);
+
+    const capeMaterial = new THREE.MeshStandardMaterial({
+      color: 0x4a0080, // Royal purple
+      roughness: 0.7,
+      metalness: 0.1,
+      side: THREE.DoubleSide
+    });
+
+    // Cape collar
+    const collarGeometry = new THREE.TorusGeometry(size * 0.6, 0.1, 8, 16, Math.PI);
+    const collar = new THREE.Mesh(collarGeometry, capeMaterial);
+    collar.rotation.x = Math.PI / 2;
+    collar.rotation.z = Math.PI;
+    collar.position.y = size * 0.3;
+    capeGroup.add(collar);
+
+    // Cape body segments (will animate)
+    for (let i = 0; i < 6; i++) {
+      const width = size * 1.2 - i * 0.1;
+      const segmentGeometry = new THREE.PlaneGeometry(width, 0.3);
+      const segment = new THREE.Mesh(segmentGeometry, capeMaterial);
+      segment.position.y = -i * 0.25;
+      segment.position.z = -i * 0.08;
+      capeGroup.add(segment);
+      this.capeSegments.push(segment);
+    }
+
+    group.add(capeGroup);
+    this.capeGroup = capeGroup;
+
+    // Enhanced crown (already exists, but let's add gems)
+    const gemGeometry = new THREE.OctahedronGeometry(0.08);
+    const gemMaterial = new THREE.MeshStandardMaterial({
+      color: 0xff0000,
+      emissive: 0xff0000,
+      emissiveIntensity: 0.3,
+      metalness: 0.9,
+      roughness: 0.1
+    });
+
+    for (let i = 0; i < 5; i++) {
+      const angle = (i / 5) * Math.PI * 2;
+      const gem = new THREE.Mesh(gemGeometry, gemMaterial);
+      gem.position.set(
+        Math.cos(angle) * 0.25,
+        size + 0.45,
+        Math.sin(angle) * 0.25
+      );
+      group.add(gem);
+    }
   }
 
   createHealthBar() {
@@ -436,7 +878,81 @@ export class Enemy {
       this.mesh.rotation.y += delta * 0.5;
     }
 
+    // === CUTE BUT DEADLY: Animate personality features ===
+    this.updateCuteAnimations(delta, player);
+
     return spawnRequest;
+  }
+
+  updateCuteAnimations(delta, player) {
+    // Track animation time
+    if (!this.cuteAnimTimer) this.cuteAnimTimer = 0;
+    this.cuteAnimTimer += delta;
+
+    switch (this.type) {
+      case EnemyTypes.SHOOTER:
+        // Animate wand sparkles
+        if (this.wandSparkles) {
+          for (let i = 0; i < this.wandSparkles.length; i++) {
+            const sparkle = this.wandSparkles[i];
+            const phase = this.cuteAnimTimer * 5 + i * 2;
+            sparkle.position.x = Math.sin(phase) * 0.08;
+            sparkle.position.z = Math.cos(phase) * 0.08;
+            sparkle.material.opacity = 0.5 + Math.sin(phase * 2) * 0.5;
+          }
+        }
+        // Animate wand crystal rotation
+        if (this.wandCrystal) {
+          this.wandCrystal.rotation.y += delta * 3;
+        }
+        // Squint eyelids when attacking (cooldown low)
+        if (this.leftEyelid && this.rightEyelid) {
+          const squintAmount = this.attackTimer < 0.5 ? 0.8 : 0.5;
+          this.leftEyelid.rotation.x = Math.PI + squintAmount;
+          this.rightEyelid.rotation.x = Math.PI + squintAmount;
+        }
+        break;
+
+      case EnemyTypes.BOMBER:
+        // Animate sweat drop dripping
+        if (this.sweatDrop) {
+          const dropPhase = this.cuteAnimTimer % 1;
+          this.sweatDrop.position.y = this.config.size * 0.5 - dropPhase * 0.3;
+          this.sweatDrop.material.opacity = 0.7 * (1 - dropPhase);
+          if (dropPhase < 0.1) {
+            this.sweatDrop.position.y = this.config.size * 0.5;
+          }
+        }
+        break;
+
+      case EnemyTypes.BOSS:
+        // Animate boss eyes looking at player
+        if (this.bossEyes && player) {
+          const toPlayer = new THREE.Vector3(
+            player.mesh.position.x - this.mesh.position.x,
+            0,
+            player.mesh.position.z - this.mesh.position.z
+          ).normalize();
+
+          for (const { pupil } of this.bossEyes) {
+            const targetX = toPlayer.x * 0.03;
+            const targetY = toPlayer.z * 0.03;
+            pupil.position.x += (targetX - pupil.position.x) * delta * 3;
+            pupil.position.y += (targetY - pupil.position.y) * delta * 3;
+          }
+        }
+
+        // Animate cape flowing
+        if (this.capeSegments) {
+          for (let i = 0; i < this.capeSegments.length; i++) {
+            const segment = this.capeSegments[i];
+            const phase = this.cuteAnimTimer * 2 + i * 0.4;
+            segment.rotation.x = Math.sin(phase) * 0.2 * (i + 1) * 0.2;
+            segment.rotation.y = Math.cos(phase * 0.7) * 0.1 * (i + 1) * 0.15;
+          }
+        }
+        break;
+    }
   }
 
   updateBoss(delta, player, toPlayer, distanceToPlayer, projectileSystem) {

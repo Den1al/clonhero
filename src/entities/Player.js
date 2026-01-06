@@ -116,6 +116,49 @@ export class Player {
     head.castShadow = true;
     group.add(head);
 
+    // === CUTE BUT DEADLY: Animated Eyes ===
+    const eyeGroup = new THREE.Group();
+    eyeGroup.position.y = 1.35;
+
+    // Left eye (white)
+    const eyeGeometry = new THREE.SphereGeometry(0.07, 12, 12);
+    const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    leftEye.position.set(-0.1, 0.02, 0.2);
+    leftEye.scale.set(1, 1.2, 0.6); // Slightly oval
+    eyeGroup.add(leftEye);
+
+    // Right eye (white)
+    const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    rightEye.position.set(0.1, 0.02, 0.2);
+    rightEye.scale.set(1, 1.2, 0.6);
+    eyeGroup.add(rightEye);
+
+    // Left pupil (black, will animate)
+    const pupilGeometry = new THREE.SphereGeometry(0.035, 8, 8);
+    const pupilMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    this.leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+    this.leftPupil.position.set(0, 0, 0.04);
+    leftEye.add(this.leftPupil);
+
+    // Right pupil (black, will animate)
+    this.rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+    this.rightPupil.position.set(0, 0, 0.04);
+    rightEye.add(this.rightPupil);
+
+    // Cute eye highlights (sparkle)
+    const highlightGeometry = new THREE.SphereGeometry(0.015, 6, 6);
+    const highlightMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const leftHighlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
+    leftHighlight.position.set(0.015, 0.015, 0.05);
+    leftEye.add(leftHighlight);
+    const rightHighlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
+    rightHighlight.position.set(0.015, 0.015, 0.05);
+    rightEye.add(rightHighlight);
+
+    group.add(eyeGroup);
+    this.eyeGroup = eyeGroup;
+
     // Add simple hair/helmet accent
     const hairGeometry = new THREE.SphereGeometry(0.23, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
     const hairMaterial = new THREE.MeshStandardMaterial({
@@ -127,6 +170,84 @@ export class Player {
     hair.position.y = 1.38;
     hair.rotation.x = Math.PI;
     group.add(hair);
+
+    // === CUTE BUT DEADLY: Flowing Scarf ===
+    const scarfGroup = new THREE.Group();
+    scarfGroup.position.set(0, 1.15, -0.15);
+
+    // Scarf wrap around neck
+    const scarfWrapGeometry = new THREE.TorusGeometry(0.28, 0.06, 8, 16, Math.PI * 1.5);
+    const scarfMaterial = new THREE.MeshStandardMaterial({
+      color: 0xe74c3c, // Red scarf
+      roughness: 0.8,
+      metalness: 0.1
+    });
+    const scarfWrap = new THREE.Mesh(scarfWrapGeometry, scarfMaterial);
+    scarfWrap.rotation.x = Math.PI / 2;
+    scarfWrap.rotation.z = Math.PI / 4;
+    scarfGroup.add(scarfWrap);
+
+    // Flowing scarf tail segments (will animate)
+    this.scarfSegments = [];
+    const segmentCount = 5;
+    for (let i = 0; i < segmentCount; i++) {
+      const width = 0.12 - i * 0.015; // Tapers
+      const segmentGeometry = new THREE.BoxGeometry(width, 0.04, 0.18 - i * 0.02);
+      const segment = new THREE.Mesh(segmentGeometry, scarfMaterial);
+      segment.position.set(0, -i * 0.15, -0.15 - i * 0.1);
+      scarfGroup.add(segment);
+      this.scarfSegments.push(segment);
+    }
+
+    group.add(scarfGroup);
+    this.scarfGroup = scarfGroup;
+
+    // === CUTE BUT DEADLY: Quiver with Arrows ===
+    const quiverGroup = new THREE.Group();
+    quiverGroup.position.set(-0.35, 0.7, -0.1);
+    quiverGroup.rotation.z = 0.2;
+
+    // Quiver body (cylinder)
+    const quiverGeometry = new THREE.CylinderGeometry(0.08, 0.1, 0.5, 8);
+    const quiverMaterial = new THREE.MeshStandardMaterial({
+      color: 0x8b4513, // Brown leather
+      roughness: 0.9,
+      metalness: 0.1
+    });
+    const quiver = new THREE.Mesh(quiverGeometry, quiverMaterial);
+    quiverGroup.add(quiver);
+
+    // Visible arrows in quiver
+    const arrowShaftGeometry = new THREE.CylinderGeometry(0.012, 0.012, 0.35, 6);
+    const arrowShaftMaterial = new THREE.MeshStandardMaterial({ color: 0xdeb887 }); // Tan wood
+    const arrowHeadGeometry = new THREE.ConeGeometry(0.025, 0.06, 4);
+    const arrowHeadMaterial = new THREE.MeshStandardMaterial({
+      color: 0xc0c0c0,
+      metalness: 0.8,
+      roughness: 0.3
+    });
+
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2;
+      const radius = 0.04;
+      const arrowShaft = new THREE.Mesh(arrowShaftGeometry, arrowShaftMaterial);
+      arrowShaft.position.set(
+        Math.cos(angle) * radius,
+        0.2,
+        Math.sin(angle) * radius
+      );
+      quiverGroup.add(arrowShaft);
+
+      const arrowHead = new THREE.Mesh(arrowHeadGeometry, arrowHeadMaterial);
+      arrowHead.position.set(
+        Math.cos(angle) * radius,
+        0.4,
+        Math.sin(angle) * radius
+      );
+      quiverGroup.add(arrowHead);
+    }
+
+    group.add(quiverGroup);
 
     // Enhanced bow with golden accents
     const bowGeometry = new THREE.TorusGeometry(0.32, 0.04, 8, 24, Math.PI);
@@ -175,6 +296,12 @@ export class Player {
 
     this.body = body;
     this.originalColor = bodyMaterial.color.getHex();
+
+    // Animation timers
+    this.eyeAnimTimer = 0;
+    this.scarfAnimTimer = 0;
+    this.blinkTimer = 0;
+    this.nextBlinkTime = 2 + Math.random() * 3;
   }
 
   createHealthBar() {
@@ -250,6 +377,64 @@ export class Player {
     }
 
     this.updateHealthBar();
+
+    // === CUTE BUT DEADLY: Animate eyes and scarf ===
+    this.updateCuteAnimations(delta, enemies);
+  }
+
+  updateCuteAnimations(delta, enemies) {
+    // Animate scarf flowing behind
+    this.scarfAnimTimer += delta;
+    if (this.scarfSegments) {
+      for (let i = 0; i < this.scarfSegments.length; i++) {
+        const segment = this.scarfSegments[i];
+        const phase = this.scarfAnimTimer * 4 + i * 0.5;
+        // Wave motion based on movement
+        const moveInfluence = Math.min(1, Math.sqrt(this.velocity.x ** 2 + this.velocity.z ** 2) / this.speed);
+        segment.rotation.x = Math.sin(phase) * 0.3 * (1 + moveInfluence);
+        segment.rotation.z = Math.cos(phase * 0.7) * 0.15 * (1 + moveInfluence * 0.5);
+      }
+    }
+
+    // Animate eyes looking at nearest enemy
+    if (this.leftPupil && this.rightPupil) {
+      const nearestEnemy = this.findNearestEnemy(enemies);
+      if (nearestEnemy) {
+        // Calculate direction to enemy in local space
+        const worldDir = new THREE.Vector3(
+          nearestEnemy.mesh.position.x - this.mesh.position.x,
+          0,
+          nearestEnemy.mesh.position.z - this.mesh.position.z
+        ).normalize();
+
+        // Convert to local eye movement (limited range)
+        const localAngle = Math.atan2(worldDir.x, worldDir.z) - this.mesh.rotation.y;
+        const lookX = Math.sin(localAngle) * 0.02;
+        const lookZ = Math.cos(localAngle) * 0.02;
+
+        // Smoothly move pupils
+        this.leftPupil.position.x += (lookX - this.leftPupil.position.x) * delta * 5;
+        this.rightPupil.position.x += (lookX - this.rightPupil.position.x) * delta * 5;
+      } else {
+        // Return to center
+        this.leftPupil.position.x += (0 - this.leftPupil.position.x) * delta * 3;
+        this.rightPupil.position.x += (0 - this.rightPupil.position.x) * delta * 3;
+      }
+
+      // Blinking animation
+      this.blinkTimer += delta;
+      if (this.blinkTimer >= this.nextBlinkTime) {
+        this.blinkTimer = 0;
+        this.nextBlinkTime = 2 + Math.random() * 3;
+        // Quick blink by scaling eyes
+        if (this.eyeGroup) {
+          this.eyeGroup.scale.y = 0.1;
+          setTimeout(() => {
+            if (this.eyeGroup) this.eyeGroup.scale.y = 1;
+          }, 100);
+        }
+      }
+    }
   }
 
   findNearestEnemy(enemies) {
