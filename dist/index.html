@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-753D91HKY5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-753D91HKY5');
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -746,6 +754,173 @@
       50% {
         transform: scale(1.05);
         filter: drop-shadow(0 0 50px rgba(252, 163, 38, 0.7));
+      }
+    }
+
+    /* Level Up Player Status */
+    .levelup-status {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+      margin-top: var(--space-md);
+      margin-bottom: var(--space-sm);
+      padding: var(--space-md) var(--space-xl);
+      background: var(--surface-glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      min-width: 300px;
+      max-width: 90vw;
+    }
+
+    .levelup-health {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      width: 100%;
+    }
+
+    .levelup-health-icon {
+      font-size: 20px;
+      color: var(--health-low);
+      filter: drop-shadow(0 0 6px rgba(221, 43, 14, 0.5));
+    }
+
+    .levelup-health-bar-bg {
+      flex: 1;
+      height: 16px;
+      background: var(--bg-light);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      border: 1px solid var(--surface-border);
+      position: relative;
+    }
+
+    .levelup-health-bar {
+      height: 100%;
+      background: var(--gradient-health);
+      border-radius: var(--radius-full);
+      transition: width var(--transition-base);
+    }
+
+    .levelup-health-text {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      min-width: 70px;
+      text-align: right;
+    }
+
+    .levelup-abilities {
+      display: flex;
+      gap: var(--space-xs);
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: var(--space-xs) var(--space-sm);
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .levelup-abilities::-webkit-scrollbar {
+      display: none;
+    }
+
+    .levelup-abilities:empty {
+      display: none;
+    }
+
+    .levelup-abilities:empty + .levelup-abilities-label {
+      display: none;
+    }
+
+    .levelup-ability-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--bg-light), var(--bg-medium));
+      border: 2px solid var(--primary-500);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+    }
+
+    .levelup-ability-icon .levelup-stack-badge {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      background: var(--gradient-danger);
+      color: white;
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--bg-dark);
+    }
+
+    /* Mobile adjustments for levelup status */
+    @media (max-width: 768px) {
+      .levelup-status {
+        min-width: 250px;
+        padding: var(--space-sm) var(--space-md);
+      }
+
+      .levelup-health-icon {
+        font-size: 16px;
+      }
+
+      .levelup-health-bar-bg {
+        height: 12px;
+      }
+
+      .levelup-health-text {
+        font-size: 11px;
+        min-width: 60px;
+      }
+
+      .levelup-ability-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+      }
+
+      .levelup-ability-icon .levelup-stack-badge {
+        font-size: 8px;
+        padding: 0 3px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .levelup-status {
+        min-width: 200px;
+        padding: var(--space-xs) var(--space-sm);
+        gap: var(--space-sm);
+      }
+
+      .levelup-health-bar-bg {
+        height: 10px;
+      }
+
+      .levelup-health-text {
+        font-size: 10px;
+        min-width: 50px;
+      }
+
+      .levelup-ability-icon {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
       }
     }
 
@@ -2278,6 +2453,734 @@
     }
 
     /* ========================================
+       DIFFICULTY SELECTION STYLES
+       ======================================== */
+    .difficulty-selection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+    }
+
+    .difficulty-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: var(--space-sm);
+    }
+
+    .difficulty-options {
+      display: flex;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .difficulty-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-md) var(--space-lg);
+      min-width: 100px;
+      background: var(--surface-glass);
+      border: 2px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .difficulty-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0;
+      transition: opacity var(--transition-base);
+    }
+
+    .difficulty-btn:hover {
+      transform: translateY(-4px);
+      border-color: var(--surface-border-hover);
+    }
+
+    .difficulty-btn.selected {
+      border-width: 3px;
+      transform: translateY(-2px);
+    }
+
+    .difficulty-btn.selected::before {
+      opacity: 0.15;
+    }
+
+    /* Easy - Green */
+    .difficulty-btn[data-difficulty="easy"] { --diff-color: #10b981; }
+    .difficulty-btn[data-difficulty="easy"]::before { background: #10b981; }
+    .difficulty-btn[data-difficulty="easy"].selected { border-color: #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+    .difficulty-btn[data-difficulty="easy"]:hover { border-color: #10b981; }
+
+    /* Normal - Purple */
+    .difficulty-btn[data-difficulty="normal"] { --diff-color: #6366f1; }
+    .difficulty-btn[data-difficulty="normal"]::before { background: #6366f1; }
+    .difficulty-btn[data-difficulty="normal"].selected { border-color: #6366f1; box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+    .difficulty-btn[data-difficulty="normal"]:hover { border-color: #6366f1; }
+
+    /* Hard - Orange */
+    .difficulty-btn[data-difficulty="hard"] { --diff-color: #f59e0b; }
+    .difficulty-btn[data-difficulty="hard"]::before { background: #f59e0b; }
+    .difficulty-btn[data-difficulty="hard"].selected { border-color: #f59e0b; box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
+    .difficulty-btn[data-difficulty="hard"]:hover { border-color: #f59e0b; }
+
+    /* Nightmare - Red */
+    .difficulty-btn[data-difficulty="nightmare"] { --diff-color: #ef4444; }
+    .difficulty-btn[data-difficulty="nightmare"]::before { background: #ef4444; }
+    .difficulty-btn[data-difficulty="nightmare"].selected { border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+    .difficulty-btn[data-difficulty="nightmare"]:hover { border-color: #ef4444; }
+
+    .difficulty-icon {
+      font-size: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .difficulty-name {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+
+    .difficulty-btn.selected .difficulty-name {
+      color: var(--diff-color);
+    }
+
+    .difficulty-desc {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 90px;
+      line-height: 1.3;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Mobile adjustments for difficulty selection */
+    @media (max-width: 768px) {
+      .difficulty-options {
+        gap: var(--space-sm);
+      }
+
+      .difficulty-btn {
+        padding: var(--space-sm) var(--space-md);
+        min-width: 80px;
+      }
+
+      .difficulty-icon {
+        font-size: 24px;
+      }
+
+      .difficulty-name {
+        font-size: 12px;
+      }
+
+      .difficulty-desc {
+        font-size: 10px;
+        max-width: 75px;
+      }
+
+      .difficulty-title {
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .difficulty-options {
+        gap: var(--space-xs);
+      }
+
+      .difficulty-btn {
+        padding: var(--space-xs) var(--space-sm);
+        min-width: 70px;
+      }
+
+      .difficulty-icon {
+        font-size: 20px;
+      }
+
+      .difficulty-name {
+        font-size: 11px;
+        letter-spacing: 0.5px;
+      }
+
+      .difficulty-desc {
+        display: none;
+      }
+
+      .difficulty-title {
+        font-size: 12px;
+      }
+    }
+
+    /* ========================================
+       HELP MENU STYLES
+       ======================================== */
+    #help-menu {
+      z-index: 170;
+      overflow-y: auto;
+      padding: var(--space-lg) 0;
+    }
+
+    #help-menu .menu-title {
+      flex-shrink: 0;
+      font-size: 48px;
+      margin-bottom: var(--space-sm);
+    }
+
+    .help-container {
+      background: var(--surface-glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      margin-bottom: var(--space-lg);
+      max-width: 1000px;
+      width: 95%;
+      max-height: 80vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .help-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .help-container::-webkit-scrollbar-track {
+      background: var(--bg-light);
+      border-radius: var(--radius-full);
+    }
+
+    .help-container::-webkit-scrollbar-thumb {
+      background: var(--primary-500);
+      border-radius: var(--radius-full);
+    }
+
+    .help-section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .help-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .help-section-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gold-400);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .help-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--gold-400), transparent);
+    }
+
+    .help-content {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .help-content p {
+      margin-bottom: var(--space-sm);
+    }
+
+    .help-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+    }
+
+    .help-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-sm);
+      padding: var(--space-sm);
+      background: var(--surface-glass);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--surface-border);
+    }
+
+    .help-item-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .help-item-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .help-item-name {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .help-item-desc {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .help-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .help-list li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-xs) 0;
+      border-bottom: 1px solid var(--surface-border);
+    }
+
+    .help-list li:last-child {
+      border-bottom: none;
+    }
+
+    .help-list-icon {
+      font-size: 20px;
+      width: 28px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .help-list-content {
+      flex: 1;
+    }
+
+    .help-list-name {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .help-list-desc {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .help-controls {
+      display: flex;
+      gap: var(--space-lg);
+      justify-content: center;
+    }
+
+    .help-control-group {
+      text-align: center;
+    }
+
+    .help-control-label {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xs);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .help-control-keys {
+      display: flex;
+      gap: var(--space-xs);
+      justify-content: center;
+    }
+
+    .help-key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 36px;
+      padding: 0 var(--space-sm);
+      background: var(--bg-light);
+      border: 2px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .help-ability-category {
+      margin-bottom: var(--space-md);
+    }
+
+    .help-ability-category:last-child {
+      margin-bottom: 0;
+    }
+
+    .help-ability-category-title {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary-300);
+      margin-bottom: var(--space-sm);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .help-ability-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+
+    .help-ability-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: var(--surface-glass);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      position: relative;
+    }
+
+    .help-ability-tag:hover {
+      background: var(--surface-glass-hover);
+      border-color: var(--primary-400);
+      color: var(--text-primary);
+      transform: translateY(-2px);
+    }
+
+    .help-ability-tag:active {
+      transform: translateY(0);
+    }
+
+    .help-ability-tag.active {
+      background: var(--gradient-primary);
+      border-color: var(--primary-500);
+      color: var(--text-primary);
+    }
+
+    .help-ability-tag-icon {
+      font-size: 14px;
+    }
+
+    /* Ability detail popup */
+    .help-ability-detail {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-medium) 100%);
+      border: 2px solid var(--primary-500);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      min-width: 280px;
+      max-width: 90vw;
+      z-index: 200;
+      box-shadow: var(--shadow-xl), var(--shadow-glow-primary);
+      animation: abilityDetailIn 0.2s ease-out;
+    }
+
+    .help-ability-detail.show {
+      display: block;
+    }
+
+    @keyframes abilityDetailIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .help-ability-detail-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 199;
+    }
+
+    .help-ability-detail-backdrop.show {
+      display: block;
+    }
+
+    .help-ability-detail-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+
+    .help-ability-detail-icon {
+      font-size: 48px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    .help-ability-detail-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .help-ability-detail-category {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--primary-300);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .help-ability-detail-desc {
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: var(--space-md);
+      padding: var(--space-md);
+      background: var(--surface-glass);
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--gold-400);
+    }
+
+    .help-ability-detail-meta {
+      display: flex;
+      gap: var(--space-lg);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .help-ability-detail-meta span {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    .help-ability-detail-meta .meta-label {
+      color: var(--text-secondary);
+    }
+
+    .help-ability-detail-meta .meta-value {
+      color: var(--gold-400);
+      font-weight: 600;
+    }
+
+    .help-ability-detail-requires {
+      margin-top: var(--space-md);
+      padding: var(--space-sm) var(--space-md);
+      background: linear-gradient(135deg, rgba(252, 163, 38, 0.1), transparent);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--gold-400);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .help-ability-detail-close {
+      position: absolute;
+      top: var(--space-md);
+      right: var(--space-md);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-glass);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: 18px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .help-ability-detail-close:hover {
+      background: var(--surface-glass-hover);
+      color: var(--text-primary);
+    }
+
+    .help-tip {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: linear-gradient(135deg, rgba(252, 163, 38, 0.1), transparent);
+      border-left: 3px solid var(--gold-400);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      margin-bottom: var(--space-sm);
+    }
+
+    .help-tip:last-child {
+      margin-bottom: 0;
+    }
+
+    .help-tip-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .help-tip-text {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Mobile adjustments for help menu */
+    @media (max-width: 768px) {
+      #help-menu .menu-title {
+        font-size: 36px;
+      }
+
+      .help-container {
+        padding: var(--space-md);
+        max-height: 70vh;
+      }
+
+      .help-section-title {
+        font-size: 14px;
+      }
+
+      .help-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+      }
+
+      .help-item {
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      .help-item-icon {
+        font-size: 20px;
+      }
+
+      .help-item-name {
+        font-size: 12px;
+      }
+
+      .help-item-desc {
+        font-size: 10px;
+      }
+
+      .help-controls {
+        flex-direction: column;
+        gap: var(--space-md);
+      }
+
+      .help-key {
+        min-width: 32px;
+        height: 32px;
+        font-size: 12px;
+      }
+
+      .help-list-icon {
+        font-size: 18px;
+        width: 24px;
+      }
+
+      .help-list-name {
+        font-size: 13px;
+      }
+
+      .help-list-desc {
+        font-size: 11px;
+      }
+
+      .help-ability-tag {
+        font-size: 10px;
+        padding: 3px 6px;
+      }
+
+      .help-ability-tag-icon {
+        font-size: 12px;
+      }
+
+      .help-tip {
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      .help-tip-text {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      #help-menu .menu-title {
+        font-size: 28px;
+      }
+
+      .help-container {
+        padding: var(--space-sm);
+        max-height: 65vh;
+      }
+
+      .help-section-title {
+        font-size: 12px;
+      }
+
+      .help-section {
+        margin-bottom: var(--space-md);
+      }
+
+      .help-content {
+        font-size: 12px;
+      }
+    }
+
+    /* ========================================
        UTILITY CLASSES
        ======================================== */
     .sr-only {
@@ -2291,8 +3194,29 @@
       white-space: nowrap;
       border: 0;
     }
+
+    /* ========================================
+       CONTROLLER SELECTION STYLES
+       ======================================== */
+    .ability-card.controller-selected,
+    .bonus-card.controller-selected {
+      transform: translateY(-12px) scale(1.05);
+      border-color: var(--primary-400);
+      box-shadow: var(--shadow-xl), 0 0 30px rgba(111, 218, 201, 0.6), 0 0 60px rgba(111, 218, 201, 0.3);
+      animation: controllerSelectPulse 1.5s ease-in-out infinite;
+    }
+
+    .ability-card.controller-selected::before,
+    .bonus-card.controller-selected::before {
+      opacity: 1;
+    }
+
+    @keyframes controllerSelectPulse {
+      0%, 100% { box-shadow: var(--shadow-xl), 0 0 30px rgba(111, 218, 201, 0.6), 0 0 60px rgba(111, 218, 201, 0.3); }
+      50% { box-shadow: var(--shadow-xl), 0 0 40px rgba(111, 218, 201, 0.8), 0 0 80px rgba(111, 218, 201, 0.4); }
+    }
   </style>
-  <script type="module" crossorigin src="/clonhero/assets/index-Bc48McBS.js"></script>
+  <script type="module" crossorigin src="/clonhero/assets/index-Dl4KCeWa.js"></script>
 </head>
 <body>
   <div id="game-container">
@@ -2340,7 +3264,36 @@
     <!-- Start Menu -->
     <div id="start-menu" class="menu-overlay">
       <h1 class="menu-title">CLONHERO</h1>
+
+      <!-- Difficulty Selection -->
+      <div class="difficulty-selection">
+        <span class="difficulty-title">Select Difficulty</span>
+        <div class="difficulty-options" id="difficulty-options">
+          <button class="difficulty-btn" data-difficulty="easy">
+            <span class="difficulty-icon">🌱</span>
+            <span class="difficulty-name">Easy</span>
+            <span class="difficulty-desc">Forgiving</span>
+          </button>
+          <button class="difficulty-btn selected" data-difficulty="normal">
+            <span class="difficulty-icon">⚔️</span>
+            <span class="difficulty-name">Normal</span>
+            <span class="difficulty-desc">Balanced</span>
+          </button>
+          <button class="difficulty-btn" data-difficulty="hard">
+            <span class="difficulty-icon">🔥</span>
+            <span class="difficulty-name">Hard</span>
+            <span class="difficulty-desc">Challenging</span>
+          </button>
+          <button class="difficulty-btn" data-difficulty="nightmare">
+            <span class="difficulty-icon">💀</span>
+            <span class="difficulty-name">Nightmare</span>
+            <span class="difficulty-desc">Extreme</span>
+          </button>
+        </div>
+      </div>
+
       <button id="start-btn" class="menu-btn">Play Game</button>
+      <button id="help-btn" class="menu-btn secondary">How to Play</button>
       <button id="settings-btn" class="menu-btn secondary">Settings</button>
 
       <!-- Scoreboard Section -->
@@ -2367,6 +3320,7 @@
     <div id="pause-menu" class="menu-overlay hidden">
       <h1 class="menu-title">Paused</h1>
       <button id="resume-btn" class="menu-btn">Resume</button>
+      <button id="pause-help-btn" class="menu-btn secondary">How to Play</button>
       <button id="pause-settings-btn" class="menu-btn secondary">Settings</button>
       <button id="quit-btn" class="menu-btn secondary">Quit to Menu</button>
     </div>
@@ -2408,9 +3362,245 @@
       <button id="settings-back-btn" class="menu-btn">Back</button>
     </div>
 
+    <!-- Help Menu -->
+    <div id="help-menu" class="menu-overlay hidden">
+      <h1 class="menu-title">How to Play</h1>
+      <div class="help-container">
+
+        <!-- Controls Section -->
+        <div class="help-section">
+          <h2 class="help-section-title">🎮 Controls</h2>
+          <div class="help-controls">
+            <div class="help-control-group">
+              <div class="help-control-label">Desktop</div>
+              <div class="help-control-keys">
+                <span class="help-key">W</span>
+                <span class="help-key">A</span>
+                <span class="help-key">S</span>
+                <span class="help-key">D</span>
+              </div>
+              <div class="help-content" style="margin-top: 8px; font-size: 12px;">or Arrow Keys</div>
+            </div>
+            <div class="help-control-group">
+              <div class="help-control-label">Mobile</div>
+              <div class="help-control-keys">
+                <span class="help-key">👆</span>
+              </div>
+              <div class="help-content" style="margin-top: 8px; font-size: 12px;">Virtual Joystick</div>
+            </div>
+          </div>
+          <div class="help-content" style="text-align: center; margin-top: 12px;">
+            <p>🎯 <strong>Auto-aim</strong> - Your hero shoots automatically at the nearest enemy!</p>
+          </div>
+        </div>
+
+        <!-- Enemy Types Section -->
+        <div class="help-section">
+          <h2 class="help-section-title">👾 Enemies</h2>
+          <div class="help-grid">
+            <div class="help-item">
+              <span class="help-item-icon">🔴</span>
+              <div class="help-item-content">
+                <div class="help-item-name">Chaser</div>
+                <div class="help-item-desc">Rushes toward you for melee attacks</div>
+              </div>
+            </div>
+            <div class="help-item">
+              <span class="help-item-icon">🟣</span>
+              <div class="help-item-content">
+                <div class="help-item-name">Shooter</div>
+                <div class="help-item-desc">Fires projectiles from distance</div>
+              </div>
+            </div>
+            <div class="help-item">
+              <span class="help-item-icon">🟠</span>
+              <div class="help-item-content">
+                <div class="help-item-name">Bomber</div>
+                <div class="help-item-desc">Explodes on death dealing area damage</div>
+              </div>
+            </div>
+            <div class="help-item">
+              <span class="help-item-icon">🔵</span>
+              <div class="help-item-content">
+                <div class="help-item-name">Spawner</div>
+                <div class="help-item-desc">Summons other enemies</div>
+              </div>
+            </div>
+            <div class="help-item">
+              <span class="help-item-icon">⬜</span>
+              <div class="help-item-content">
+                <div class="help-item-name">Tank</div>
+                <div class="help-item-desc">Slow but very tough to kill</div>
+              </div>
+            </div>
+            <div class="help-item">
+              <span class="help-item-icon">💀</span>
+              <div class="help-item-content">
+                <div class="help-item-name">Boss</div>
+                <div class="help-item-desc">Powerful enemy with multiple phases</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Difficulty Section -->
+        <div class="help-section">
+          <h2 class="help-section-title">⚔️ Difficulty</h2>
+          <ul class="help-list">
+            <li>
+              <span class="help-list-icon">🌱</span>
+              <div class="help-list-content">
+                <span class="help-list-name">Easy</span>
+                <span class="help-list-desc">More health, weaker enemies, bonus XP</span>
+              </div>
+            </li>
+            <li>
+              <span class="help-list-icon">⚔️</span>
+              <div class="help-list-content">
+                <span class="help-list-name">Normal</span>
+                <span class="help-list-desc">Balanced experience for most players</span>
+              </div>
+            </li>
+            <li>
+              <span class="help-list-icon">🔥</span>
+              <div class="help-list-content">
+                <span class="help-list-name">Hard</span>
+                <span class="help-list-desc">Less health, stronger enemies</span>
+              </div>
+            </li>
+            <li>
+              <span class="help-list-icon">💀</span>
+              <div class="help-list-content">
+                <span class="help-list-name">Nightmare</span>
+                <span class="help-list-desc">Extreme challenge for experts only</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Abilities Section -->
+        <div class="help-section">
+          <h2 class="help-section-title">✨ Abilities</h2>
+          <div class="help-content" style="margin-bottom: 12px;">
+            <p>Level up by collecting XP gems from defeated enemies. Choose 1 of 3 abilities each level! <strong>Tap any ability to learn more.</strong></p>
+          </div>
+
+          <div class="help-ability-category">
+            <div class="help-ability-category-title">⚔️ Attack</div>
+            <div class="help-ability-tags">
+              <span class="help-ability-tag" data-ability="multi_shot" data-icon="🎯" data-name="Multi-Shot" data-desc="+1 projectile (spread pattern)" data-category="Attack" data-stacks="5"><span class="help-ability-tag-icon">🎯</span> Multi-Shot</span>
+              <span class="help-ability-tag" data-ability="attack_speed" data-icon="⚡" data-name="Attack Speed" data-desc="+20% attack speed" data-category="Attack" data-stacks="5"><span class="help-ability-tag-icon">⚡</span> Attack Speed</span>
+              <span class="help-ability-tag" data-ability="attack_damage" data-icon="💪" data-name="Attack Power" data-desc="+25% damage" data-category="Attack" data-stacks="5"><span class="help-ability-tag-icon">💪</span> Attack Power</span>
+              <span class="help-ability-tag" data-ability="diagonal_arrows" data-icon="↗️" data-name="Diagonal Arrows" data-desc="Fire 2 extra arrows at 45 degrees" data-category="Attack" data-stacks="1"><span class="help-ability-tag-icon">↗️</span> Diagonal Arrows</span>
+              <span class="help-ability-tag" data-ability="rear_arrow" data-icon="⬇️" data-name="Rear Arrow" data-desc="Fire 1 arrow backward" data-category="Attack" data-stacks="1"><span class="help-ability-tag-icon">⬇️</span> Rear Arrow</span>
+              <span class="help-ability-tag" data-ability="side_arrows" data-icon="↔️" data-name="Side Arrows" data-desc="Fire arrows left and right" data-category="Attack" data-stacks="1"><span class="help-ability-tag-icon">↔️</span> Side Arrows</span>
+              <span class="help-ability-tag" data-ability="pierce" data-icon="🗡️" data-name="Pierce" data-desc="+1 enemy pierce" data-category="Attack" data-stacks="5"><span class="help-ability-tag-icon">🗡️</span> Pierce</span>
+              <span class="help-ability-tag" data-ability="crit_chance" data-icon="🎲" data-name="Critical Strike" data-desc="+10% critical chance" data-category="Attack" data-stacks="5"><span class="help-ability-tag-icon">🎲</span> Crit Chance</span>
+              <span class="help-ability-tag" data-ability="crit_damage" data-icon="💥" data-name="Critical Damage" data-desc="+50% critical multiplier" data-category="Attack" data-stacks="3"><span class="help-ability-tag-icon">💥</span> Crit Damage</span>
+              <span class="help-ability-tag" data-ability="projectile_speed" data-icon="💨" data-name="Projectile Speed" data-desc="+25% projectile speed" data-category="Attack" data-stacks="3"><span class="help-ability-tag-icon">💨</span> Projectile Speed</span>
+              <span class="help-ability-tag" data-ability="attack_range" data-icon="📏" data-name="Attack Range" data-desc="+20% attack range" data-category="Attack" data-stacks="3"><span class="help-ability-tag-icon">📏</span> Attack Range</span>
+            </div>
+          </div>
+
+          <div class="help-ability-category">
+            <div class="help-ability-category-title">🛡️ Defense</div>
+            <div class="help-ability-tags">
+              <span class="help-ability-tag" data-ability="max_hp" data-icon="❤️" data-name="Max HP Up" data-desc="+20% max health" data-category="Defense" data-stacks="5"><span class="help-ability-tag-icon">❤️</span> Max HP</span>
+              <span class="help-ability-tag" data-ability="heal" data-icon="💚" data-name="Heal" data-desc="Restore 30% max health" data-category="Defense" data-stacks="∞"><span class="help-ability-tag-icon">💚</span> Heal</span>
+              <span class="help-ability-tag" data-ability="dodge" data-icon="🌀" data-name="Dodge" data-desc="+10% dodge chance" data-category="Defense" data-stacks="5"><span class="help-ability-tag-icon">🌀</span> Dodge</span>
+              <span class="help-ability-tag" data-ability="shield" data-icon="🛡️" data-name="Shield" data-desc="Block the next hit" data-category="Defense" data-stacks="3"><span class="help-ability-tag-icon">🛡️</span> Shield</span>
+              <span class="help-ability-tag" data-ability="move_speed" data-icon="👟" data-name="Move Speed" data-desc="+15% movement speed" data-category="Utility" data-stacks="5"><span class="help-ability-tag-icon">👟</span> Speed</span>
+            </div>
+          </div>
+
+          <div class="help-ability-category">
+            <div class="help-ability-category-title">🔮 Special</div>
+            <div class="help-ability-tags">
+              <span class="help-ability-tag" data-ability="magnet" data-icon="🧲" data-name="Magnet" data-desc="+50% XP pickup radius" data-category="Utility" data-stacks="3"><span class="help-ability-tag-icon">🧲</span> Magnet</span>
+              <span class="help-ability-tag" data-ability="xp_boost" data-icon="📈" data-name="XP Boost" data-desc="+20% XP gained" data-category="Utility" data-stacks="3"><span class="help-ability-tag-icon">📈</span> XP Boost</span>
+              <span class="help-ability-tag" data-ability="homing" data-icon="🎯" data-name="Homing Arrows" data-desc="Arrows curve toward enemies" data-category="Special" data-stacks="1"><span class="help-ability-tag-icon">🎯</span> Homing</span>
+              <span class="help-ability-tag" data-ability="ricochet" data-icon="💫" data-name="Ricochet" data-desc="Projectiles bounce to nearby enemies" data-category="Attack" data-stacks="1"><span class="help-ability-tag-icon">💫</span> Ricochet</span>
+              <span class="help-ability-tag" data-ability="bouncy_walls" data-icon="🔄" data-name="Bouncy Walls" data-desc="Projectiles bounce off walls" data-category="Attack" data-stacks="1"><span class="help-ability-tag-icon">🔄</span> Bouncy Walls</span>
+            </div>
+          </div>
+
+          <div class="help-ability-category">
+            <div class="help-ability-category-title">🌈 Elemental</div>
+            <div class="help-ability-tags">
+              <span class="help-ability-tag" data-ability="fire_arrows" data-icon="🔥" data-name="Fire Arrows" data-desc="Arrows burn enemies (damage over time, stacks up to 5x)" data-category="Elemental" data-stacks="1"><span class="help-ability-tag-icon">🔥</span> Fire Arrows</span>
+              <span class="help-ability-tag" data-ability="scorch" data-icon="🌋" data-name="Scorch" data-desc="+20% burn damage, +1s duration" data-category="Elemental" data-stacks="3" data-requires="Fire Arrows"><span class="help-ability-tag-icon">🌋</span> Scorch</span>
+              <span class="help-ability-tag" data-ability="inferno" data-icon="💥" data-name="Inferno" data-desc="Burning enemies explode on death" data-category="Elemental" data-stacks="1" data-requires="Fire Arrows"><span class="help-ability-tag-icon">💥</span> Inferno</span>
+              <span class="help-ability-tag" data-ability="ice_arrows" data-icon="❄️" data-name="Ice Arrows" data-desc="Arrows freeze enemies (slow effect, stacks up to 3x)" data-category="Elemental" data-stacks="1"><span class="help-ability-tag-icon">❄️</span> Ice Arrows</span>
+              <span class="help-ability-tag" data-ability="frostbite" data-icon="🧊" data-name="Frostbite" data-desc="+15% slow effect, +1s duration" data-category="Elemental" data-stacks="3" data-requires="Ice Arrows"><span class="help-ability-tag-icon">🧊</span> Frostbite</span>
+              <span class="help-ability-tag" data-ability="shatter" data-icon="💎" data-name="Shatter" data-desc="Frozen enemies take +30% damage" data-category="Elemental" data-stacks="1" data-requires="Ice Arrows"><span class="help-ability-tag-icon">💎</span> Shatter</span>
+              <span class="help-ability-tag" data-ability="poison_arrows" data-icon="☠️" data-name="Poison Arrows" data-desc="Arrows poison enemies (damage over time, stacks up to 5x)" data-category="Elemental" data-stacks="1"><span class="help-ability-tag-icon">☠️</span> Poison Arrows</span>
+              <span class="help-ability-tag" data-ability="virulence" data-icon="🦠" data-name="Virulence" data-desc="+25% poison damage, +2s duration" data-category="Elemental" data-stacks="3" data-requires="Poison Arrows"><span class="help-ability-tag-icon">🦠</span> Virulence</span>
+              <span class="help-ability-tag" data-ability="plague" data-icon="🌫️" data-name="Plague" data-desc="Poison spreads to nearby enemies on death" data-category="Elemental" data-stacks="1" data-requires="Poison Arrows"><span class="help-ability-tag-icon">🌫️</span> Plague</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="help-section">
+          <h2 class="help-section-title">💡 Tips</h2>
+          <div class="help-tip">
+            <span class="help-tip-icon">🚪</span>
+            <span class="help-tip-text">Clear all enemies to open the exit gate and progress to the next room</span>
+          </div>
+          <div class="help-tip">
+            <span class="help-tip-icon">👹</span>
+            <span class="help-tip-text">Boss battles occur every 5 rooms - prepare your abilities!</span>
+          </div>
+          <div class="help-tip">
+            <span class="help-tip-icon">🔗</span>
+            <span class="help-tip-text">Elemental abilities have synergy upgrades - Fire unlocks Scorch & Inferno!</span>
+          </div>
+          <div class="help-tip">
+            <span class="help-tip-icon">🎁</span>
+            <span class="help-tip-text">Choose a bonus reward after clearing each room</span>
+          </div>
+        </div>
+
+      </div>
+      <button id="help-back-btn" class="menu-btn">Back</button>
+
+      <!-- Ability Detail Popup -->
+      <div id="help-ability-detail-backdrop" class="help-ability-detail-backdrop"></div>
+      <div id="help-ability-detail" class="help-ability-detail">
+        <button id="help-ability-detail-close" class="help-ability-detail-close">✕</button>
+        <div class="help-ability-detail-header">
+          <span id="help-ability-detail-icon" class="help-ability-detail-icon">🎯</span>
+          <div>
+            <div id="help-ability-detail-title" class="help-ability-detail-title">Multi-Shot</div>
+            <div id="help-ability-detail-category" class="help-ability-detail-category">Attack</div>
+          </div>
+        </div>
+        <div id="help-ability-detail-desc" class="help-ability-detail-desc">+1 projectile (spread pattern)</div>
+        <div class="help-ability-detail-meta">
+          <span><span class="meta-label">Max Stacks:</span> <span id="help-ability-detail-stacks" class="meta-value">5</span></span>
+        </div>
+        <div id="help-ability-detail-requires" class="help-ability-detail-requires" style="display: none;">
+          <span>🔗 Requires:</span> <span id="help-ability-detail-requires-name"></span>
+        </div>
+      </div>
+    </div>
+
     <!-- Level Up Screen -->
     <div id="levelup-screen" class="menu-overlay hidden">
       <h1 id="levelup-title">Level Up!</h1>
+
+      <!-- Player Status During Level Up -->
+      <div id="levelup-status" class="levelup-status">
+        <div class="levelup-health">
+          <span class="levelup-health-icon">&#10084;</span>
+          <div class="levelup-health-bar-bg">
+            <div id="levelup-health-bar" class="levelup-health-bar"></div>
+          </div>
+          <span id="levelup-health-text" class="levelup-health-text">100/100</span>
+        </div>
+        <div id="levelup-abilities" class="levelup-abilities"></div>
+      </div>
+
       <div id="ability-choices"></div>
     </div>
 

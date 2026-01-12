@@ -4,6 +4,11 @@ import { difficultyManager, DifficultyLevel } from '../systems/DifficultyManager
 
 export class UI {
   constructor() {
+    // Controller navigation state
+    this.selectedIndex = 0;
+    this.selectableItems = [];
+    this.currentSelectionType = null; // 'ability', 'bonus', etc.
+
     this.elements = {
       healthBar: document.getElementById('health-bar'),
       healthText: document.getElementById('health-text'),
@@ -451,6 +456,12 @@ export class UI {
 
     this.elements.abilityChoices.innerHTML = '';
 
+    // Reset controller selection state
+    this.selectedIndex = 0;
+    this.selectableItems = [];
+    this.currentSelectionType = 'ability';
+    this.onSelectCallback = onSelect;
+
     for (const ability of abilities) {
       const card = document.createElement('div');
       card.className = 'ability-card';
@@ -466,7 +477,11 @@ export class UI {
       });
 
       this.elements.abilityChoices.appendChild(card);
+      this.selectableItems.push({ element: card, data: ability });
     }
+
+    // Highlight the first item for controller users
+    this.updateControllerSelection();
   }
 
   updateLevelUpStatus(playerStats) {
@@ -730,6 +745,13 @@ export class UI {
 
     const choicesContainer = document.getElementById('bonus-choices');
 
+    // Reset controller selection state
+    this.selectedIndex = 0;
+    this.selectableItems = [];
+    this.currentSelectionType = 'bonus';
+    this.onSelectCallback = onSelect;
+    this.bonusScreen = bonusScreen;
+
     // Create option cards (similar to ability cards but smaller/simpler)
     options.forEach((option) => {
       const card = document.createElement('div');
@@ -746,7 +768,11 @@ export class UI {
       });
 
       choicesContainer.appendChild(card);
+      this.selectableItems.push({ element: card, data: option });
     });
+
+    // Highlight the first item for controller users
+    this.updateControllerSelection();
   }
 
   hideBonusSelection() {
@@ -1007,5 +1033,68 @@ export class UI {
     }
 
     scoreboardContainerElement.innerHTML = html;
+  }
+
+  // Controller navigation methods
+
+  handleControllerInput(input) {
+    if (!input.isGamepadConnected() || this.selectableItems.length === 0) return;
+
+    const nav = input.getMenuNavigation();
+
+    // Handle left/right navigation for horizontal layouts (ability cards, bonus cards)
+    if (nav.x !== 0) {
+      this.selectedIndex += nav.x;
+
+      // Wrap around
+      if (this.selectedIndex < 0) {
+        this.selectedIndex = this.selectableItems.length - 1;
+      } else if (this.selectedIndex >= this.selectableItems.length) {
+        this.selectedIndex = 0;
+      }
+
+      this.updateControllerSelection();
+      Audio.play('abilitySelect');
+    }
+
+    // Handle confirm button (A)
+    if (input.isConfirmJustPressed()) {
+      this.confirmControllerSelection();
+    }
+  }
+
+  updateControllerSelection() {
+    // Remove selection highlight from all items
+    this.selectableItems.forEach((item, index) => {
+      item.element.classList.remove('controller-selected');
+    });
+
+    // Add selection highlight to current item
+    if (this.selectableItems[this.selectedIndex]) {
+      this.selectableItems[this.selectedIndex].element.classList.add('controller-selected');
+    }
+  }
+
+  confirmControllerSelection() {
+    if (this.selectableItems.length === 0) return;
+
+    const selected = this.selectableItems[this.selectedIndex];
+    if (!selected) return;
+
+    if (this.currentSelectionType === 'ability') {
+      if (this.onSelectCallback) {
+        this.onSelectCallback(selected.data);
+        this.hideLevelUpScreen();
+      }
+    } else if (this.currentSelectionType === 'bonus') {
+      if (this.onSelectCallback && this.bonusScreen) {
+        this.bonusScreen.classList.add('hidden');
+        this.onSelectCallback(selected.data);
+      }
+    }
+
+    // Clear selection state
+    this.selectableItems = [];
+    this.currentSelectionType = null;
   }
 }

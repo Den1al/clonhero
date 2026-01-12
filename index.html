@@ -3194,6 +3194,27 @@
       white-space: nowrap;
       border: 0;
     }
+
+    /* ========================================
+       CONTROLLER SELECTION STYLES
+       ======================================== */
+    .ability-card.controller-selected,
+    .bonus-card.controller-selected {
+      transform: translateY(-12px) scale(1.05);
+      border-color: var(--primary-400);
+      box-shadow: var(--shadow-xl), 0 0 30px rgba(111, 218, 201, 0.6), 0 0 60px rgba(111, 218, 201, 0.3);
+      animation: controllerSelectPulse 1.5s ease-in-out infinite;
+    }
+
+    .ability-card.controller-selected::before,
+    .bonus-card.controller-selected::before {
+      opacity: 1;
+    }
+
+    @keyframes controllerSelectPulse {
+      0%, 100% { box-shadow: var(--shadow-xl), 0 0 30px rgba(111, 218, 201, 0.6), 0 0 60px rgba(111, 218, 201, 0.3); }
+      50% { box-shadow: var(--shadow-xl), 0 0 40px rgba(111, 218, 201, 0.8), 0 0 80px rgba(111, 218, 201, 0.4); }
+    }
   </style>
 </head>
 <body>

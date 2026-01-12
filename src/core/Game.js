@@ -385,7 +385,12 @@ export class Game {
     }
 
     this.totalTime += delta;
-    this.input.update();
+
+    // Handle pause button from controller during gameplay
+    if (this.input.isPauseJustPressed()) {
+      this.pauseGame();
+      return;
+    }
 
     this.player.update(delta, this.input, this.enemies);
 
@@ -825,10 +830,60 @@ export class Game {
       this.deltaTime = Math.min((time - this.lastTime) / 1000, 0.1);
       this.lastTime = time;
 
+      // Always update input (for gamepad polling in menus)
+      this.input.update(this.deltaTime);
+
+      // Handle controller input based on game state
+      this.handleControllerMenuInput();
+
       this.update(this.deltaTime);
       this.scene.render();
     } catch (error) {
       console.error('Game loop error:', error);
+    }
+  }
+
+  handleControllerMenuInput() {
+    // Resume game with Start button when paused
+    if (this.state === GameState.PAUSED) {
+      if (this.input.isPauseJustPressed() || this.input.isConfirmJustPressed()) {
+        this.resumeGame();
+        return;
+      }
+      if (this.input.isCancelJustPressed()) {
+        this.resumeGame();
+        return;
+      }
+    }
+
+    // Handle menu navigation with controller
+    if (this.state === GameState.MENU) {
+      if (this.input.isConfirmJustPressed()) {
+        this.startGame();
+        return;
+      }
+    }
+
+    // Handle game over / victory screens
+    if (this.state === GameState.GAMEOVER || this.state === GameState.VICTORY) {
+      if (this.input.isConfirmJustPressed()) {
+        this.restartGame();
+        return;
+      }
+      if (this.input.isCancelJustPressed()) {
+        this.quitToMenu();
+        return;
+      }
+    }
+
+    // Handle level up screen with controller
+    if (this.state === GameState.LEVELUP) {
+      this.ui.handleControllerInput(this.input);
+    }
+
+    // Handle bonus selection with controller
+    if (this.state === GameState.REWARD_WHEEL) {
+      this.ui.handleControllerInput(this.input);
     }
   }
 

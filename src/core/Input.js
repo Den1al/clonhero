@@ -10,8 +10,32 @@ export class Input {
     this.maxJoystickDistance = 50; // Max distance stick can move from center
     this.touchControlsEnabled = false; // Only enable during gameplay
 
+    // Gamepad support
+    this.gamepadConnected = false;
+    this.gamepadIndex = null;
+    this.deadzone = 0.15; // Standard deadzone for analog sticks
+    this.gamepadMovement = { x: 0, y: 0 };
+    this.menuNavigation = { x: 0, y: 0 };
+
+    // Button state tracking (for edge detection - detecting button press vs held)
+    this.gamepadButtons = {
+      a: false,           // Button 0 - Confirm
+      b: false,           // Button 1 - Cancel/Back
+      start: false,       // Button 9 - Pause
+      dpadUp: false,      // Button 12
+      dpadDown: false,    // Button 13
+      dpadLeft: false,    // Button 14
+      dpadRight: false    // Button 15
+    };
+    this.prevGamepadButtons = { ...this.gamepadButtons };
+
+    // Menu navigation cooldown (to prevent too-fast scrolling)
+    this.menuNavCooldown = 0;
+    this.menuNavCooldownTime = 0.2; // 200ms between menu nav inputs
+
     this.setupKeyboardListeners();
     this.setupTouchListeners();
+    this.setupGamepadListeners();
 
     // Initially hide joystick on mobile (it appears on touch)
     if (this.isMobile) {
@@ -53,6 +77,143 @@ export class Input {
     window.addEventListener('blur', () => {
       this.keys = {};
     });
+  }
+
+  setupGamepadListeners() {
+    window.addEventListener('gamepadconnected', (e) => {
+      console.log(`Gamepad connected: ${e.gamepad.id}`);
+      this.gamepadConnected = true;
+      this.gamepadIndex = e.gamepad.index;
+    });
+
+    window.addEventListener('gamepaddisconnected', (e) => {
+      console.log(`Gamepad disconnected: ${e.gamepad.id}`);
+      if (this.gamepadIndex === e.gamepad.index) {
+        this.gamepadConnected = false;
+        this.gamepadIndex = null;
+        this.gamepadMovement = { x: 0, y: 0 };
+        this.resetGamepadButtons();
+      }
+    });
+  }
+
+  resetGamepadButtons() {
+    for (const key in this.gamepadButtons) {
+      this.gamepadButtons[key] = false;
+      this.prevGamepadButtons[key] = false;
+    }
+  }
+
+  applyDeadzone(value) {
+    if (Math.abs(value) < this.deadzone) {
+      return 0;
+    }
+    // Normalize the value to 0-1 range after deadzone
+    const sign = value > 0 ? 1 : -1;
+    return sign * (Math.abs(value) - this.deadzone) / (1 - this.deadzone);
+  }
+
+  updateGamepad(delta) {
+    if (!this.gamepadConnected || this.gamepadIndex === null) return;
+
+    const gamepads = navigator.getGamepads();
+    const gamepad = gamepads[this.gamepadIndex];
+
+    if (!gamepad) return;
+
+    // Store previous button states for edge detection
+    this.prevGamepadButtons = { ...this.gamepadButtons };
+
+    // Update button states
+    this.gamepadButtons.a = gamepad.buttons[0]?.pressed || false;
+    this.gamepadButtons.b = gamepad.buttons[1]?.pressed || false;
+    this.gamepadButtons.start = gamepad.buttons[9]?.pressed || false;
+    this.gamepadButtons.dpadUp = gamepad.buttons[12]?.pressed || false;
+    this.gamepadButtons.dpadDown = gamepad.buttons[13]?.pressed || false;
+    this.gamepadButtons.dpadLeft = gamepad.buttons[14]?.pressed || false;
+    this.gamepadButtons.dpadRight = gamepad.buttons[15]?.pressed || false;
+
+    // Update left stick movement with deadzone
+    const rawX = gamepad.axes[0] || 0;
+    const rawY = gamepad.axes[1] || 0;
+
+    this.gamepadMovement.x = this.applyDeadzone(rawX);
+    this.gamepadMovement.y = this.applyDeadzone(rawY);
+
+    // Update menu navigation cooldown
+    if (this.menuNavCooldown > 0) {
+      this.menuNavCooldown -= delta;
+    }
+
+    // Menu navigation from D-pad or left stick
+    this.menuNavigation = { x: 0, y: 0 };
+
+    if (this.menuNavCooldown <= 0) {
+      // D-pad navigation
+      if (this.gamepadButtons.dpadUp) {
+        this.menuNavigation.y = -1;
+        this.menuNavCooldown = this.menuNavCooldownTime;
+      } else if (this.gamepadButtons.dpadDown) {
+        this.menuNavigation.y = 1;
+        this.menuNavCooldown = this.menuNavCooldownTime;
+      }
+      if (this.gamepadButtons.dpadLeft) {
+        this.menuNavigation.x = -1;
+        this.menuNavCooldown = this.menuNavCooldownTime;
+      } else if (this.gamepadButtons.dpadRight) {
+        this.menuNavigation.x = 1;
+        this.menuNavCooldown = this.menuNavCooldownTime;
+      }
+
+      // Left stick navigation (for menus, with threshold)
+      const stickThreshold = 0.5;
+      if (this.menuNavigation.x === 0 && this.menuNavigation.y === 0) {
+        if (this.gamepadMovement.y < -stickThreshold) {
+          this.menuNavigation.y = -1;
+          this.menuNavCooldown = this.menuNavCooldownTime;
+        } else if (this.gamepadMovement.y > stickThreshold) {
+          this.menuNavigation.y = 1;
+          this.menuNavCooldown = this.menuNavCooldownTime;
+        }
+        if (this.gamepadMovement.x < -stickThreshold) {
+          this.menuNavigation.x = -1;
+          this.menuNavCooldown = this.menuNavCooldownTime;
+        } else if (this.gamepadMovement.x > stickThreshold) {
+          this.menuNavigation.x = 1;
+          this.menuNavCooldown = this.menuNavCooldownTime;
+        }
+      }
+    }
+  }
+
+  // Check if a button was just pressed this frame (edge detection)
+  isGamepadButtonJustPressed(button) {
+    return this.gamepadButtons[button] && !this.prevGamepadButtons[button];
+  }
+
+  // Check if start/pause button was just pressed
+  isPauseJustPressed() {
+    return this.isGamepadButtonJustPressed('start');
+  }
+
+  // Check if confirm button (A) was just pressed
+  isConfirmJustPressed() {
+    return this.isGamepadButtonJustPressed('a');
+  }
+
+  // Check if cancel/back button (B) was just pressed
+  isCancelJustPressed() {
+    return this.isGamepadButtonJustPressed('b');
+  }
+
+  // Get menu navigation input (returns { x, y } where values are -1, 0, or 1)
+  getMenuNavigation() {
+    return this.menuNavigation;
+  }
+
+  // Check if gamepad is connected
+  isGamepadConnected() {
+    return this.gamepadConnected;
   }
 
   setupTouchListeners() {
@@ -178,11 +339,20 @@ export class Input {
     joystickZone.style.opacity = '0';
   }
 
-  update() {
+  update(delta = 0.016) {
+    // Update gamepad state (must be called every frame for polling)
+    this.updateGamepad(delta);
+
     if (this.isMobile && this.joystickActive) {
+      // Mobile touch joystick
       this.movement.x = this.joystickPosition.x;
       this.movement.y = this.joystickPosition.y;
+    } else if (this.gamepadConnected && (Math.abs(this.gamepadMovement.x) > 0 || Math.abs(this.gamepadMovement.y) > 0)) {
+      // Gamepad left stick (takes priority when being used)
+      this.movement.x = this.gamepadMovement.x;
+      this.movement.y = this.gamepadMovement.y;
     } else {
+      // Keyboard input
       let x = 0;
       let y = 0;
 
